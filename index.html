@@ -2160,8 +2160,10 @@
         let f2 = pickRandom(TIER1_FRACS);
         while (f2.denom === f1.denom) f2 = pickRandom(TIER1_FRACS);
 
-        const base1 = f1.denom * randInt(3, 10) * 10;
-        const base2 = f2.denom * randInt(3, 10) * 10;
+        const m1 = pickRandom([3, 4, 5, 6, 8, 9, 12, 15, 18, 20]);
+        const m2 = pickRandom([3, 4, 5, 6, 8, 9, 12, 15, 18, 20]);
+        const base1 = f1.denom * m1 * (f1.denom <= 6 ? 10 : 1);
+        const base2 = f2.denom * m2 * (f2.denom <= 6 ? 10 : 1);
         const val1 = Math.round((base1 / f1.denom) * f1.mult);
         const val2 = Math.round((base2 / f2.denom) * f2.mult);
         const isPlus = Math.random() > 0.4;
@@ -2177,13 +2179,33 @@
         };
       },
 
-      // 4. Speed Conversion Factors (5/18 and 18/5)
+      // 4. Percentage Growth & Multiplier Indexing (e.g. 14.28% increase on 840, 16.67% decrease on 720)
+      percentageGrowthIndexing: (id) => {
+        const category = 'Fractions & %';
+        const f = pickRandom(TIER1_FRACS);
+        const m = pickRandom([4, 6, 8, 10, 12, 14, 15, 16, 18, 20, 24, 30]);
+        const base = f.denom * m * (f.denom <= 7 ? 10 : 1);
+        const changeVal = Math.round((base / f.denom) * f.mult);
+        const isIncrease = Math.random() > 0.5;
+        const ans = isIncrease ? base + changeVal : base - changeVal;
+        const expr = isIncrease ? `(${base} + ${f.p} of ${base})` : `(${base} - ${f.p} of ${base})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: f.denom, mult: f.mult }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `pct_growth_${f.denom}`,
+          signature: `pct_growth_${f.label}_${base}_${isIncrease ? 'inc' : 'dec'}`,
+          id, category, expr, ans, targetSec,
+          hint: `Multiplier factor: ${f.p} = ${f.label} ➔ ${isIncrease ? `(1 + ${f.label}) × ${base}` : `(1 - ${f.label}) × ${base}`}`,
+          shortcut: `Step 1: ${f.label} of ${base} = ${changeVal} ➔ Step 2: ${base} ${isIncrease ? '+' : '-'} ${changeVal} = ${ans}`
+        };
+      },
+
+      // 5. Speed Conversion Factors (5/18 and 18/5)
       speedConversion: (id) => {
         const category = 'Fractions & %';
         const isFiveEighteenth = Math.random() > 0.5;
         if (isFiveEighteenth) {
-          // e.g. 5/18 of 180, 270, 360, 450, 540, 720, 900
-          const k = pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25]);
+          // e.g. 5/18 of 180, 270, 360, 450, 540, 720, 900, 1080
+          const k = pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40, 45, 50, 60] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25, 30]);
           const base = 18 * k * (k < 10 ? 10 : 1);
           const term = Math.round((base / 18) * 5);
           const offset = randInt(35, 220);
@@ -2199,8 +2221,8 @@
             shortcut: `Step 1: 5/18 × ${base} = 5 × ${base / 18} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         } else {
-          // e.g. 18/5 of 120, 150, 180, 240, 350, 450, 650
-          const k = pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55] : [8, 10, 12, 14, 16, 18, 20, 24, 30]);
+          // e.g. 18/5 of 120, 150, 180, 240, 350, 450, 650, 750, 850
+          const k = pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55, 65, 75] : [8, 10, 12, 14, 16, 18, 20, 24, 30, 35, 40]);
           const base = 5 * k * (k < 10 ? 10 : 1);
           const term = Math.round((base / 5) * 18);
           const offset = randInt(35, 240);
@@ -2218,14 +2240,14 @@
         }
       },
 
-      // 5. Decimal Multipliers
+      // 6. Decimal Multipliers
       decimalMultipliers: (id) => {
         const category = 'Roots & Decimals';
         const choice = pickRandom(DECIMAL_MULTIPLIERS);
-        const k = randInt(4, 24);
+        const k = randInt(6, 28);
         const base = choice.denom * k * (choice.denom <= 4 ? 10 : 1);
         const prodVal = Math.round((base / choice.denom) * choice.num);
-        const offset = randInt(25, 150);
+        const offset = randInt(25, 180);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? prodVal + offset : Math.abs(prodVal - offset);
         const expr = isPlus ? `(${choice.name} × ${base}) + ${offset}` : (prodVal >= offset ? `(${choice.name} × ${base}) - ${offset}` : `${offset} - (${choice.name} × ${base})`);
@@ -2236,6 +2258,32 @@
           id, category, expr, ans, targetSec,
           hint: `Convert decimal to fraction: ${choice.name} = ${choice.frac}`,
           shortcut: `Step 1: ${choice.name} = ${choice.frac} ➔ (${choice.frac}) × ${base} = ${prodVal} ➔ Step 2: ${ans}`
+        };
+      },
+
+      // 7. Dual Decimal Multiplier Composites (e.g. (1.25 × 240) - (0.875 × 320))
+      dualDecimalComposite: (id) => {
+        const category = 'Roots & Decimals';
+        const dec1 = pickRandom(DECIMAL_MULTIPLIERS);
+        let dec2 = pickRandom(DECIMAL_MULTIPLIERS);
+        while (dec2.name === dec1.name) dec2 = pickRandom(DECIMAL_MULTIPLIERS);
+
+        const k1 = pickRandom([6, 8, 10, 12, 14, 16, 20, 24]);
+        const k2 = pickRandom([6, 8, 10, 12, 14, 16, 20, 24]);
+        const base1 = dec1.denom * k1 * (dec1.denom <= 4 ? 10 : 1);
+        const base2 = dec2.denom * k2 * (dec2.denom <= 4 ? 10 : 1);
+        const val1 = Math.round((base1 / dec1.denom) * dec1.num);
+        const val2 = Math.round((base2 / dec2.denom) * dec2.num);
+        const isPlus = Math.random() > 0.45;
+        const ans = isPlus ? val1 + val2 : Math.abs(val1 - val2);
+        const expr = isPlus ? `(${dec1.name} × ${base1}) + (${dec2.name} × ${base2})` : (val1 >= val2 ? `(${dec1.name} × ${base1}) - (${dec2.name} × ${base2})` : `(${dec2.name} × ${base2}) - (${dec1.name} × ${base1})`);
+        const targetSec = computeDynamicIdealTime([{ type: 'mult_dec', isDecimal: true }, { type: 'mult_dec', isDecimal: true }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dual_dec_${dec1.denom}_${dec2.denom}`,
+          signature: `dual_dec_${dec1.name}_${base1}_${dec2.name}_${base2}`,
+          id, category, expr, ans, targetSec,
+          hint: `Convert both decimals: ${dec1.name} = ${dec1.frac} and ${dec2.name} = ${dec2.frac}`,
+          shortcut: `Step 1: (${dec1.frac} × ${base1} = ${val1}) | (${dec2.frac} × ${base2} = ${val2}) ➔ Step 2: ${val1} ${isPlus ? '+' : '-'} ${val2} = ${ans}`
         };
       }
     };
@@ -2343,6 +2391,19 @@
           family = `nb_below_${a}_${b}`;
           hint = `Vedic base-100: (${a}-${d2})×100 + (${d1}×${d2}) = ${100-d1-d2}×100 + ${d1*d2} = ${prod}`;
           shortcut = `Step 1: ${a} × ${b} = (${a}-${d2})00 + (${d1}×${d2}) = ${prod} ➔ Step 2: ${prod} ${isPlus ? '+' : '-'} ${offset} = ${ans}`;
+        } else if (sub === 'base200') {
+          const d1 = pickRandom([-6, -4, -3, -2, -1, 1, 2, 3, 4, 6]);
+          const d2 = pickRandom([-6, -4, -3, -2, -1, 1, 2, 3, 4, 6]);
+          const a = 200 + d1;
+          const b = 200 + d2;
+          const prod = (200 + d1 + d2) * 200 + (d1 * d2);
+          const offset = randInt(40, 260);
+          const isPlus = Math.random() > 0.45;
+          ans = isPlus ? prod + offset : prod - offset;
+          expr = `(${a} × ${b}) ${isPlus ? '+' : '-'} ${offset}`;
+          family = `nb_200_${a}_${b}`;
+          hint = `Vedic base-200: (200 + ${d1} + ${d2}) × 200 + (${d1} × ${d2}) = ${200 + d1 + d2} × 200 + ${d1 * d2} = ${prod}`;
+          shortcut = `Step 1: ${a} × ${b} = (${200+d1+d2} × 200) + (${d1*d2}) = ${prod} ➔ Step 2: ${prod} ${isPlus ? '+' : '-'} ${offset} = ${ans}`;
         } else {
           const tens = randInt(2, 9);
           const u1 = randInt(1, 9);
@@ -2364,6 +2425,31 @@
           family,
           signature: `${family}_${expr}`,
           id, category, expr, ans, targetSec, hint, shortcut
+        };
+      },
+
+      // 3. Multi-Step Dual Product Synthesis ((A × B) ± (C × D))
+      dualProductComposite: (id) => {
+        const category = 'Tables & Products';
+        const t1 = pickRandom([13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25]);
+        const m1 = randInt(4, 9);
+        const prod1 = t1 * m1;
+
+        let t2 = pickRandom([13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25]);
+        while (t2 === t1) t2 = pickRandom([13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25]);
+        const m2 = randInt(3, 8);
+        const prod2 = t2 * m2;
+
+        const isPlus = Math.random() > 0.45;
+        const ans = isPlus ? prod1 + prod2 : Math.abs(prod1 - prod2);
+        const expr = isPlus ? `(${t1} × ${m1}) + (${t2} × ${m2})` : (prod1 >= prod2 ? `(${t1} × ${m1}) - (${t2} × ${m2})` : `(${t2} × ${m2}) - (${t1} × ${m1})`);
+        const targetSec = computeDynamicIdealTime([{ type: 'table', t: t1, m: m1 }, { type: 'table', t: t2, m: m2 }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dualprod_${t1}_${t2}`,
+          signature: `dualprod_${t1}_${m1}_${t2}_${m2}`,
+          id, category, expr, ans, targetSec,
+          hint: `Evaluate both table products: ${t1} × ${m1} = ${prod1} and ${t2} × ${m2} = ${prod2}`,
+          shortcut: `Step 1: (${t1}×${m1} = ${prod1}) | (${t2}×${m2} = ${prod2}) ➔ Step 2: ${prod1} ${isPlus ? '+' : '-'} ${prod2} = ${ans}`
         };
       },
 
@@ -2862,6 +2948,7 @@
         activeGenerators.push(ArchetypesFractions.clusteredPercentage);
         activeGenerators.push(ArchetypesFractions.percentageReversal);
         activeGenerators.push(ArchetypesFractions.speedConversion);
+        activeGenerators.push(ArchetypesFractions.percentageGrowthIndexing);
         if (configDifficulty !== 'easy') {
           activeGenerators.push(ArchetypesFractions.dualFractionComposite);
         }
@@ -2872,6 +2959,7 @@
         activeGenerators.push(ArchetypesMultiplication.breakApartMultiplication);
         activeGenerators.push(ArchetypesMultiplication.nearBaseMultiplication);
         activeGenerators.push(ArchetypesMultiplication.twinProducts);
+        activeGenerators.push(ArchetypesMultiplication.dualProductComposite);
         activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes);
         activeGenerators.push(ArchetypesMultiplication.catSpecialNumbers);
         activeGenerators.push(ArchetypesMultiplication.highYieldTables);
@@ -2895,6 +2983,9 @@
       if (enabledTopics.has('roots_decimals')) {
         activeGenerators.push(ArchetypesPowers.directSquareRoot);
         activeGenerators.push(ArchetypesFractions.decimalMultipliers);
+        if (configDifficulty !== 'easy') {
+          activeGenerators.push(ArchetypesFractions.dualDecimalComposite);
+        }
       }
 
       // Category 7: Multi-Topic Cross Hybrids
@@ -2926,7 +3017,7 @@
 
       // Dual-Layer Anti-Repetition Loop (Checks Exact Signature AND Family-Level Repetition)
       let q = null;
-      const maxTries = 20;
+      const maxTries = 25;
       for (let attempt = 0; attempt < maxTries; attempt++) {
         const chosenGen = activeGenerators.length > 0 ? pickRandom(activeGenerators) : () => {
           const a = randInt(45, 120), b = randInt(35, 95);
@@ -2937,10 +3028,10 @@
         const isSignatureRepeated = recentSignatures.includes(candidate.signature);
         const isFamilyRepeated = candidate.family && recentFamilies.includes(candidate.family);
 
-        if ((!isSignatureRepeated && !isFamilyRepeated) || (attempt >= 12 && !isSignatureRepeated) || attempt === maxTries - 1) {
+        if ((!isSignatureRepeated && !isFamilyRepeated) || (attempt >= 15 && !isSignatureRepeated) || attempt === maxTries - 1) {
           q = candidate;
           recentSignatures.push(candidate.signature);
-          if (recentSignatures.length > 40) recentSignatures.shift(); // Hold 40 unique questions
+          if (recentSignatures.length > 60) recentSignatures.shift(); // Hold 60 unique questions for rich randomness
           
           if (candidate.family) {
             recentFamilies.push(candidate.family);
