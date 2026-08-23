@@ -2476,10 +2476,10 @@
         };
       },
 
-      // 4. Mental Division by Primes (Heavily weighted on 3 and 7)
+      // 4. Mental Division by Primes (Heavily weighted on 3, 7, 11, 13, 17, 19)
       mentalDivisionByPrimes: (id) => {
         const category = 'Tables & Products';
-        const primeDivisor = pickWeighted([3, 5, 7, 11, 13, 17, 19], [25, 15, 25, 15, 10, 6, 4]);
+        const primeDivisor = pickWeighted([3, 5, 7, 11, 13, 17, 19, 23, 29], [22, 12, 22, 14, 12, 8, 5, 3, 2]);
         let quotient;
         if (primeDivisor === 3) quotient = randInt(45, 290);
         else if (primeDivisor === 5) quotient = randInt(35, 260);
@@ -2487,20 +2487,71 @@
         else if (primeDivisor === 11) quotient = randInt(18, 110);
         else if (primeDivisor === 13) quotient = randInt(14, 85);
         else if (primeDivisor === 17) quotient = randInt(12, 65);
-        else quotient = randInt(12, 55);
+        else if (primeDivisor === 19) quotient = randInt(12, 55);
+        else quotient = randInt(8, 40);
 
         const dividend = primeDivisor * quotient;
-        const offset = randInt(25, 180);
-        const isPlus = Math.random() > 0.45;
-        const ans = isPlus ? quotient + offset : Math.abs(quotient - offset);
-        const expr = isPlus ? `(${dividend} ÷ ${primeDivisor}) + ${offset}` : (quotient >= offset ? `(${dividend} ÷ ${primeDivisor}) - ${offset}` : `${offset} - (${dividend} ÷ ${primeDivisor})`);
+        const template = randInt(1, 3);
+        let expr, ans, offset;
+
+        if (template === 1) { // (dividend ÷ prime) + offset
+          offset = randInt(30, 220);
+          ans = quotient + offset;
+          expr = `(${dividend} ÷ ${primeDivisor}) + ${offset}`;
+        } else if (template === 2) { // (dividend ÷ prime) - offset or offset - (dividend ÷ prime)
+          offset = randInt(25, Math.max(quotient - 5, 180));
+          ans = quotient >= offset ? quotient - offset : offset - quotient;
+          expr = quotient >= offset ? `(${dividend} ÷ ${primeDivisor}) - ${offset}` : `${offset} - (${dividend} ÷ ${primeDivisor})`;
+        } else { // (dividend ÷ prime) + (table × mult)
+          const t = pickRandom([12, 14, 15, 16, 18]);
+          const m = randInt(3, 7);
+          const tVal = t * m;
+          ans = quotient + tVal;
+          expr = `(${dividend} ÷ ${primeDivisor}) + (${t} × ${m})`;
+        }
+
         const targetSec = computeDynamicIdealTime([{ type: 'table', t: primeDivisor, m: 8 }, { type: 'add_sub', terms: 2 }]);
         return {
-          family: `divprime_${primeDivisor}`,
-          signature: `divprime_${dividend}_${expr}`,
+          family: `prime_op_${primeDivisor}`,
+          signature: `divprime_${dividend}_${primeDivisor}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Chunking division: ${dividend} ÷ ${primeDivisor} = ${quotient}`,
-          shortcut: `Step 1: ${dividend} ÷ ${primeDivisor} = ${quotient} ➔ Step 2: ${quotient} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+          hint: `Chunking prime division: ${dividend} ÷ ${primeDivisor} = ${quotient}`,
+          shortcut: `Step 1: ${dividend} ÷ ${primeDivisor} = ${quotient} ➔ Step 2: ${expr} = ${ans}`
+        };
+      },
+
+      // 5. Mental Prime Multiplication (Primes 7, 11, 13, 17, 19, 23, 29 with Multi-Term Coupling)
+      primeMultiplication: (id) => {
+        const category = 'Tables & Products';
+        const primeMultiplier = pickWeighted([7, 11, 13, 17, 19, 23, 29], [22, 20, 18, 16, 12, 7, 5]);
+        const m = randInt(4, 16);
+        const prod = primeMultiplier * m;
+        const template = randInt(1, 3);
+        let expr, ans, offset;
+
+        if (template === 1) { // (prime × m) + offset
+          offset = randInt(35, 240);
+          ans = prod + offset;
+          expr = `(${primeMultiplier} × ${m}) + ${offset}`;
+        } else if (template === 2) { // (prime × m) - offset
+          offset = randInt(30, Math.min(prod - 10, 220));
+          ans = prod - offset;
+          expr = `(${primeMultiplier} × ${m}) - ${offset}`;
+        } else { // (prime × m) + (other_table × k)
+          const t = pickRandom([12, 14, 15, 16, 18]);
+          const k = randInt(3, 7);
+          const tVal = t * k;
+          ans = prod + tVal;
+          expr = `(${primeMultiplier} × ${m}) + (${t} × ${k})`;
+        }
+
+        const targetSec = computeDynamicIdealTime([{ type: 'table', t: primeMultiplier, m }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `prime_op_${primeMultiplier}`,
+          signature: `multprime_${primeMultiplier}_${m}_${expr}`,
+          id, category, expr, ans, targetSec,
+          hint: `Prime product: ${primeMultiplier} × ${m} = ${prod}`,
+          shortcut: `Step 1: ${primeMultiplier} × ${m} = ${prod} ➔ Step 2: ${expr} = ${ans}`
         };
       },
 
@@ -2961,6 +3012,9 @@
         activeGenerators.push(ArchetypesMultiplication.twinProducts);
         activeGenerators.push(ArchetypesMultiplication.dualProductComposite);
         activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes);
+        activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes); // Double weighted for strong frequency
+        activeGenerators.push(ArchetypesMultiplication.primeMultiplication);
+        activeGenerators.push(ArchetypesMultiplication.primeMultiplication);     // Double weighted for strong frequency
         activeGenerators.push(ArchetypesMultiplication.catSpecialNumbers);
         activeGenerators.push(ArchetypesMultiplication.highYieldTables);
       }
@@ -3017,7 +3071,7 @@
 
       // Dual-Layer Anti-Repetition Loop (Checks Exact Signature AND Family-Level Repetition)
       let q = null;
-      const maxTries = 25;
+      const maxTries = 30;
       for (let attempt = 0; attempt < maxTries; attempt++) {
         const chosenGen = activeGenerators.length > 0 ? pickRandom(activeGenerators) : () => {
           const a = randInt(45, 120), b = randInt(35, 95);
@@ -3027,8 +3081,13 @@
 
         const isSignatureRepeated = recentSignatures.includes(candidate.signature);
         const isFamilyRepeated = candidate.family && recentFamilies.includes(candidate.family);
+        
+        // Strict back-to-back guard: Never serve two prime operations in immediate succession
+        const isPrimeOp = candidate.family && candidate.family.startsWith('prime_op_');
+        const lastWasPrimeOp = recentFamilies.length > 0 && recentFamilies[recentFamilies.length - 1].startsWith('prime_op_');
+        const isPrimeBackToBack = isPrimeOp && lastWasPrimeOp;
 
-        if ((!isSignatureRepeated && !isFamilyRepeated) || (attempt >= 15 && !isSignatureRepeated) || attempt === maxTries - 1) {
+        if ((!isSignatureRepeated && !isFamilyRepeated && !isPrimeBackToBack) || (attempt >= 20 && !isSignatureRepeated) || attempt === maxTries - 1) {
           q = candidate;
           recentSignatures.push(candidate.signature);
           if (recentSignatures.length > 60) recentSignatures.shift(); // Hold 60 unique questions for rich randomness

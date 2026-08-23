@@ -68,7 +68,7 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
    - Powers: Squares (12² to 30² plus 31², 32², 33² with (a+b)² expansion hints: (30+d)² = 900 + 60d + d²), Cubes (7³ to 18³), Base-2 (2¹–2¹²), Base-3 (3¹–3⁷), Base-4 (4¹–4⁶), Base-5 (5¹–5⁶), Base-6 (6¹–6⁵), Base-7 (7¹–7⁴), Difference of Squares (a² - b²), Base 50/100 Near Squaring.
    - Fractions & %: Denominators 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 18, 20. Percentage reversals (250, 750, 125, 375, 625), km/h factor drills (5/18 and 18/5).
    - Factorials: High-yield ratios (8!/6!, 7!/5!, 6!/3!) multiplied by scalars and factored with offsets.
-   - Tables & Products: Heavy emphasis on mental division by low primes (3, 5, 7, 11, 13, 17, 19), CAT Special Numbers (1001 = 7×11×13, 10001 = 73×137, 111 = 3×37, 10101 = 111×91, 999 = 27×37) with prime factorization hints, Tables 14–29, and Twin Products (x-d)(x+d) around midpoints (25, 30, 35, 40, 50, 60).
+   - Tables & Products: Heavy emphasis on mental prime multiplication and prime division (3, 5, 7, 11, 13, 17, 19, 23, 29) coupled with multi-term operations (never in isolation, never back-to-back), CAT Special Numbers (1001 = 7×11×13, 10001 = 73×137, 111 = 3×37, 10101 = 111×91, 999 = 27×37) with prime factorization hints, Tables 14–29, and Twin Products (x-d)(x+d) around midpoints (25, 30, 35, 40, 50, 60).
    - Addition & Subtraction: 4–5 term mixed (+ and -) 2-digit & 3-digit speed arithmetic, 4–6 term DILR column sums.
    - Roots & Decimals: Square roots (14²-36²), Cube roots (7³-19³), Decimal Multipliers (0.375, 0.625, 0.875, 1.25, 1.5, 1.75, 0.833, 1.333, 1.667).
    - Hybrids: Multi-step cross-topic questions (Powers + Tables, Fractions + Tables, Factorials + Fractions).
