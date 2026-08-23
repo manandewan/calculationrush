@@ -2182,10 +2182,11 @@
         const category = 'Fractions & %';
         const isFiveEighteenth = Math.random() > 0.5;
         if (isFiveEighteenth) {
-          const k = randInt(4, configDifficulty === 'hard' ? 22 : 14);
-          const base = 18 * k;
-          const term = 5 * k;
-          const offset = randInt(30, 160);
+          // e.g. 5/18 of 180, 270, 360, 450, 540, 720, 900
+          const k = pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25]);
+          const base = 18 * k * (k < 10 ? 10 : 1);
+          const term = Math.round((base / 18) * 5);
+          const offset = randInt(35, 220);
           const isPlus = Math.random() > 0.45;
           const ans = isPlus ? term + offset : Math.abs(term - offset);
           const expr = isPlus ? `(5/18 of ${base}) + ${offset}` : (term >= offset ? `(5/18 of ${base}) - ${offset}` : `${offset} - (5/18 of ${base})`);
@@ -2194,14 +2195,15 @@
             family: `c518_${k}`,
             signature: `c518_${base}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${k} = ${term}`,
-            shortcut: `Step 1: 5/18 × ${base} = 5 × ${k} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+            hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${base / 18} = ${term}`,
+            shortcut: `Step 1: 5/18 × ${base} = 5 × ${base / 18} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         } else {
-          const k = randInt(4, configDifficulty === 'hard' ? 18 : 12);
-          const base = 5 * k;
-          const term = 18 * k;
-          const offset = randInt(30, 180);
+          // e.g. 18/5 of 120, 150, 180, 240, 350, 450, 650
+          const k = pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55] : [8, 10, 12, 14, 16, 18, 20, 24, 30]);
+          const base = 5 * k * (k < 10 ? 10 : 1);
+          const term = Math.round((base / 5) * 18);
+          const offset = randInt(35, 240);
           const isPlus = Math.random() > 0.45;
           const ans = isPlus ? term + offset : Math.abs(term - offset);
           const expr = isPlus ? `(18/5 of ${base}) + ${offset}` : (term >= offset ? `(18/5 of ${base}) - ${offset}` : `${offset} - (18/5 of ${base})`);
@@ -2210,8 +2212,8 @@
             family: `c185_${k}`,
             signature: `c185_${base}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${k} = ${term}`,
-            shortcut: `Step 1: 18/5 × ${base} = 18 × ${k} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+            hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${base / 5} = ${term}`,
+            shortcut: `Step 1: 18/5 × ${base} = 18 × ${base / 5} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         }
       },
