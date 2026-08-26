@@ -5,10 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculation Rush</title>
   
-  <!-- Custom Branded SVG Favicon & Web App Touch Icon -->
+  <!-- Progressive Web App (PWA) Manifest & Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><path d='M55 15 L25 55 L48 55 L40 85 L75 45 L52 45 Z' fill='white'/></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><path d='M55 15 L25 55 L48 55 L40 85 L75 45 L52 45 Z' fill='white'/></svg>">
   <meta name="theme-color" content="#090a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CalcRush">
+  <meta name="application-name" content="Calculation Rush">
+  <meta name="mobile-web-app-capable" content="yes">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4033,6 +4040,22 @@
     checkFirstTimeTour();
     navigateTo('home');
   });
+</script>
+
+<!-- Progressive Web App (PWA) Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          // Check for auto-updates whenever page is focused or loaded
+          registration.update();
+        })
+        .catch((error) => {
+          console.error('ServiceWorker registration failed:', error);
+        });
+    });
+  }
 </script>
 </body>
 </html>

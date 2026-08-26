@@ -1,0 +1,25 @@
+{
+  "name": "Calculation Rush",
+  "short_name": "CalcRush",
+  "description": "Elite CAT & DILR Mental Arithmetic Speed Sprint Arena",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090a0f",
+  "theme_color": "#090a0f",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
