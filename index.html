@@ -1771,7 +1771,7 @@
           sec += (c.a > 30 || c.b > 20 ? 4.5 : 3.0);
           break;
         case 'add_sub':
-          sec += c.terms * 1.0;
+          sec += c.terms * (c.is3Digit ? 1.3 : 1.0);
           break;
       }
     });
@@ -2654,10 +2654,67 @@
       }
     };
 
-    // --- TRACK 5: SPEED ARITHMETIC & COLUMN BALANCING ARCHETYPES ---
+    // --- TRACK 5: SPEED ARITHMETIC & COLUMN BALANCING ARCHETYPES (2-DIGIT & 3-DIGIT VERSIONS) ---
     const ArchetypesAdditionSubtraction = {
-      // 1. 4-5 Term Mixed Balanced Arithmetic
-      multiTermMixed: (id) => {
+      // 1. Pure 2-Digit Speed Pair (2 Terms: Addition & Subtraction)
+      twoDigitPair: (id) => {
+        const category = 'Addition & Subtraction';
+        const isPlus = Math.random() > 0.45;
+        let t1, t2, ans, expr, hint, shortcut;
+        if (isPlus) {
+          t1 = randInt(28, 98);
+          t2 = randInt(25, 96);
+          ans = t1 + t2;
+          expr = `${t1} + ${t2}`;
+          const tensSum = (Math.floor(t1 / 10) + Math.floor(t2 / 10)) * 10;
+          const unitsSum = (t1 % 10) + (t2 % 10);
+          hint = `Left-to-right: Tens (${Math.floor(t1/10)*10} + ${Math.floor(t2/10)*10} = ${tensSum}) + Units (${t1%10} + ${t2%10} = ${unitsSum})`;
+          shortcut = `${t1} + ${t2} = ${tensSum} + ${unitsSum} = ${ans}`;
+        } else {
+          t1 = randInt(45, 99);
+          t2 = randInt(18, t1 - 12);
+          ans = t1 - t2;
+          expr = `${t1} - ${t2}`;
+          const nextTen = Math.ceil(t2 / 10) * 10;
+          const comp = nextTen - t2;
+          hint = t2 % 10 >= 7 
+            ? `Bridge trick: Subtract ${nextTen} and add ${comp} (${t1} - ${nextTen} + ${comp})`
+            : `Tens first: ${t1} - ${Math.floor(t2/10)*10} = ${t1 - Math.floor(t2/10)*10}, then - ${t2%10}`;
+          shortcut = `${t1} - ${t2} = ${ans}`;
+        }
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: false }]);
+        return {
+          family: `as_2d_pair_${isPlus ? 'add' : 'sub'}_${t1 % 10}`,
+          signature: `as_2d_p_${expr}`,
+          id, category, expr, ans, targetSec, hint, shortcut
+        };
+      },
+
+      // 2. Pure 2-Digit 3-Term Mixed Speed (Mixed + and -)
+      twoDigitThreeTerm: (id) => {
+        const category = 'Addition & Subtraction';
+        const t1 = randInt(45, 98);
+        const t2 = randInt(24, 88);
+        const isT2Minus = Math.random() < 0.45 && t1 > t2 + 15;
+        const running1 = isT2Minus ? t1 - t2 : t1 + t2;
+        
+        const t3 = randInt(18, 75);
+        const isT3Minus = Math.random() < 0.5 && running1 > t3 + 12;
+        const ans = isT3Minus ? running1 - t3 : running1 + t3;
+        
+        const expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 3, is3Digit: false }]);
+        return {
+          family: `as_2d_3t_${t1 % 10}`,
+          signature: `as_2d_3t_${expr}`,
+          id, category, expr, ans, targetSec,
+          hint: `Calculate left-to-right: (${t1} ${isT2Minus ? '-' : '+'} ${t2} = ${running1}) ➔ ${running1} ${isT3Minus ? '-' : '+'} ${t3}`,
+          shortcut: `Step 1: ${t1} ${isT2Minus ? '-' : '+'} ${t2} = ${running1} ➔ Step 2: ${running1} ${isT3Minus ? '-' : '+'} ${t3} = ${ans}`
+        };
+      },
+
+      // 3. 2-Digit 4-5 Term Mixed Chain (Multi-Term Balanced)
+      twoDigitMultiTerm: (id) => {
         const category = 'Addition & Subtraction';
         const termCount = configDifficulty === 'easy' ? 4 : (configDifficulty === 'hard' ? 5 : pickRandom([4, 5]));
         const terms = [];
@@ -2680,43 +2737,18 @@
           exprParts.push(terms[i + 1]);
         }
         const expr = exprParts.join(' ');
-        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: termCount }]);
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: termCount, is3Digit: false }]);
         return {
-          family: `as_mix_${termCount}`,
-          signature: `as_mix_${terms.join('_')}_${ops.join('')}`,
+          family: `as_2d_multi_${termCount}_${terms[0] % 10}`,
+          signature: `as_2d_m_${terms.join('_')}_${ops.join('')}`,
           id, category, expr, ans: currentRunning, targetSec,
           hint: `Group positive and negative numbers or calculate left-to-right`,
           shortcut: `Left-to-right evaluation ➔ ${currentRunning}`
         };
       },
 
-      // 2. 3-Digit Speed Arithmetic (Decomposing Place Values)
-      threeDigitSpeed: (id) => {
-        const category = 'Addition & Subtraction';
-        const t1 = randInt(160, 580);
-        const t2 = randInt(120, 480);
-        const t3 = randInt(95, 340);
-        const t4 = randInt(45, 260);
-        const isT3Minus = Math.random() > 0.35;
-        const isT4Minus = Math.random() > 0.45;
-        
-        let ans = t1 + t2;
-        ans = isT3Minus ? ans - t3 : ans + t3;
-        ans = isT4Minus ? ans - t4 : ans + t4;
-
-        const expr = `${t1} + ${t2} ${isT3Minus ? '-' : '+'} ${t3} ${isT4Minus ? '-' : '+'} ${t4}`;
-        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 4 }]);
-        return {
-          family: `as_3digit`,
-          signature: `as_3d_${t1}_${t2}_${t3}_${t4}`,
-          id, category, expr, ans, targetSec,
-          hint: `Break into Hundreds and Tens+Units`,
-          shortcut: `Group hundreds & tens/units ➔ ${ans}`
-        };
-      },
-
-      // 3. DILR Column Sums
-      dilrColumnSum: (id) => {
+      // 4. 2-Digit DILR Column Sums (4-6 terms)
+      twoDigitColumnSum: (id) => {
         const category = 'Addition & Subtraction';
         const count = configDifficulty === 'easy' ? 4 : (configDifficulty === 'hard' ? 6 : 5);
         const terms = [];
@@ -2725,33 +2757,167 @@
         }
         const sum = terms.reduce((acc, v) => acc + v, 0);
         const expr = terms.join(' + ');
-        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: count }]);
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: count, is3Digit: false }]);
+        const tensSum = terms.map(t => Math.floor(t / 10) * 10).reduce((a, b) => a + b, 0);
+        const unitsSum = terms.map(t => t % 10).reduce((a, b) => a + b, 0);
         return {
-          family: `colsum`,
-          signature: `colsum_${terms.join('_')}`,
+          family: `as_2d_col_${terms.length}_${sum % 10}`,
+          signature: `as_2d_col_${terms.join('_')}`,
           id, category, expr, ans: sum, targetSec,
-          hint: `Add tens column first, then units column`,
-          shortcut: `Tens (${terms.map(t => Math.floor(t/10)*10).reduce((a,b)=>a+b,0)}) + Units (${terms.map(t => t%10).reduce((a,b)=>a+b,0)}) = ${sum}`
+          hint: `Add tens column first, then units column: ${tensSum} + ${unitsSum}`,
+          shortcut: `Tens (${tensSum}) + Units (${unitsSum}) = ${sum}`
         };
       },
 
-      // 4. Complementary Subtraction (Base 1000 and 500)
+      // 5. Pure 3-Digit Speed Pair (2 Terms: Addition & Subtraction)
+      threeDigitPair: (id) => {
+        const category = 'Addition & Subtraction';
+        const isPlus = Math.random() > 0.45;
+        let t1, t2, ans, expr, hint, shortcut;
+        if (isPlus) {
+          t1 = randInt(180, 750);
+          t2 = randInt(140, 680);
+          ans = t1 + t2;
+          expr = `${t1} + ${t2}`;
+          const hSum = (Math.floor(t1 / 100) + Math.floor(t2 / 100)) * 100;
+          const rem1 = t1 % 100;
+          const rem2 = t2 % 100;
+          const remSum = rem1 + rem2;
+          hint = `Decompose: Hundreds (${Math.floor(t1/100)*100} + ${Math.floor(t2/100)*100} = ${hSum}) + Remainder (${rem1} + ${rem2} = ${remSum})`;
+          shortcut = `Hundreds (${hSum}) + Rest (${remSum}) = ${ans}`;
+        } else {
+          t1 = randInt(350, 960);
+          t2 = randInt(120, t1 - 40);
+          ans = t1 - t2;
+          expr = `${t1} - ${t2}`;
+          const nextHundred = Math.ceil(t2 / 100) * 100;
+          const comp = nextHundred - t2;
+          hint = t2 % 100 >= 60 
+            ? `Bridge trick: Subtract ${nextHundred} and add ${comp} (${t1} - ${nextHundred} + ${comp})`
+            : `Hundreds first: ${t1} - ${Math.floor(t2/100)*100} = ${t1 - Math.floor(t2/100)*100}, then subtract ${t2%100}`;
+          shortcut = `${t1} - ${t2} = ${ans}`;
+        }
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: true }]);
+        return {
+          family: `as_3d_pair_${isPlus ? 'add' : 'sub'}_${Math.floor(t1 / 100)}`,
+          signature: `as_3d_p_${expr}`,
+          id, category, expr, ans, targetSec, hint, shortcut
+        };
+      },
+
+      // 6. Pure 3-Digit 3-Term Mixed Speed (Mixed + and -)
+      threeDigitThreeTerm: (id) => {
+        const category = 'Addition & Subtraction';
+        const t1 = randInt(250, 680);
+        const t2 = randInt(140, 480);
+        const isT2Minus = Math.random() < 0.45 && t1 > t2 + 60;
+        const running1 = isT2Minus ? t1 - t2 : t1 + t2;
+
+        const t3 = randInt(110, 390);
+        const isT3Minus = Math.random() < 0.5 && running1 > t3 + 50;
+        const ans = isT3Minus ? running1 - t3 : running1 + t3;
+
+        const expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 3, is3Digit: true }]);
+        return {
+          family: `as_3d_3t_${Math.floor(t1 / 100)}`,
+          signature: `as_3d_3t_${expr}`,
+          id, category, expr, ans, targetSec,
+          hint: `Calculate in stages: (${t1} ${isT2Minus ? '-' : '+'} ${t2} = ${running1}) ➔ ${running1} ${isT3Minus ? '-' : '+'} ${t3}`,
+          shortcut: `Step 1: ${t1} ${isT2Minus ? '-' : '+'} ${t2} = ${running1} ➔ Step 2: ${running1} ${isT3Minus ? '-' : '+'} ${t3} = ${ans}`
+        };
+      },
+
+      // 7. 3-Digit 4-Term Multi-Term Speed (Speed Balancing)
+      threeDigitMultiTerm: (id) => {
+        const category = 'Addition & Subtraction';
+        const t1 = randInt(220, 580);
+        const t2 = randInt(150, 460);
+        const t3 = randInt(120, 380);
+        const t4 = randInt(110, 290);
+        const isT3Minus = Math.random() > 0.35;
+        const isT4Minus = Math.random() > 0.45;
+        
+        let ans = t1 + t2;
+        ans = isT3Minus ? ans - t3 : ans + t3;
+        ans = isT4Minus ? ans - t4 : ans + t4;
+
+        const expr = `${t1} + ${t2} ${isT3Minus ? '-' : '+'} ${t3} ${isT4Minus ? '-' : '+'} ${t4}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 4, is3Digit: true }]);
+        return {
+          family: `as_3d_multi_${Math.floor(t1 / 100)}`,
+          signature: `as_3d_m_${t1}_${t2}_${t3}_${t4}`,
+          id, category, expr, ans, targetSec,
+          hint: `Group Hundreds first, then combine Tens & Units`,
+          shortcut: `Group hundreds & tens/units ➔ ${ans}`
+        };
+      },
+
+      // 8. 3-Digit DILR Column Sums (3-4 terms)
+      threeDigitColumnSum: (id) => {
+        const category = 'Addition & Subtraction';
+        const count = configDifficulty === 'hard' ? 4 : (configDifficulty === 'easy' ? 3 : pickRandom([3, 4]));
+        const terms = [];
+        for (let i = 0; i < count; i++) {
+          const base = randInt(14, 68) * 10 + pickRandom([0, 5, 2, 8]);
+          terms.push(base);
+        }
+        const sum = terms.reduce((acc, v) => acc + v, 0);
+        const expr = terms.join(' + ');
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: count, is3Digit: true }]);
+        const hundredsSum = terms.map(t => Math.floor(t / 100) * 100).reduce((a, b) => a + b, 0);
+        const restSum = terms.map(t => t % 100).reduce((a, b) => a + b, 0);
+        return {
+          family: `as_3d_col_${terms.length}_${sum % 10}`,
+          signature: `as_3d_col_${terms.join('_')}`,
+          id, category, expr, ans: sum, targetSec,
+          hint: `Add hundreds first (${hundredsSum}), then rest (${restSum}): ${hundredsSum} + ${restSum}`,
+          shortcut: `Hundreds (${hundredsSum}) + Remaining (${restSum}) = ${sum}`
+        };
+      },
+
+      // 9. Mixed 2-Digit & 3-Digit Combined Speed
+      mixedDigitsSpeed: (id) => {
+        const category = 'Addition & Subtraction';
+        const t1 = randInt(250, 780);
+        const t2 = randInt(28, 95);
+        const t3 = randInt(25, 92);
+        const isT2Plus = Math.random() > 0.4;
+        const isT3Plus = Math.random() > 0.5;
+        let ans = isT2Plus ? t1 + t2 : t1 - t2;
+        ans = isT3Plus ? ans + t3 : ans - t3;
+        const expr = `${t1} ${isT2Plus ? '+' : '-'} ${t2} ${isT3Plus ? '+' : '-'} ${t3}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 3, is3Digit: false }]);
+        return {
+          family: `as_mix_2d3d_${t1 % 10}`,
+          signature: `as_mix_2d3d_${t1}_${t2}_${t3}`,
+          id, category, expr, ans, targetSec,
+          hint: `Anchor to 3-digit base: ${t1} ${isT2Plus ? '+' : '-'} ${t2} = ${isT2Plus ? t1 + t2 : t1 - t2}, then ${isT3Plus ? '+' : '-'} ${t3}`,
+          shortcut: `Step 1: ${t1} ${isT2Plus ? '+' : '-'} ${t2} = ${isT2Plus ? t1 + t2 : t1 - t2} ➔ Step 2: ${ans}`
+        };
+      },
+
+      // 10. Complementary Subtraction (Base 500, 1000, 1500, 2000)
       complementarySubtraction: (id) => {
         const category = 'Addition & Subtraction';
-        const isBase1000 = Math.random() > 0.5;
-        const base = isBase1000 ? 1000 : 500;
-        const subVal = isBase1000 ? randInt(145, 895) : randInt(45, 425);
+        const base = pickRandom([500, 1000, 1000, 1200, 1500, 2000]);
+        const subVal = base === 500 ? randInt(65, 435) : (base === 1000 ? randInt(145, 895) : randInt(250, base - 150));
         const ans = base - subVal;
         const expr = `${base} - ${subVal}`;
-        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2 }]);
+        const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: true }]);
         return {
-          family: `comp_sub_${base}`,
-          signature: `comp_sub_${base}_${subVal}`,
+          family: `as_comp_${base}_${subVal % 10}`,
+          signature: `as_comp_${base}_${subVal}`,
           id, category, expr, ans, targetSec,
-          hint: `Complement trick from ${base}: match 9s for initial digits and 10 for unit digit`,
+          hint: base === 1000 || base === 2000 ? `Vedic complement: match 9s for leading digits and 10 for unit digit` : `Subtract hundreds then tens/units from ${base}`,
           shortcut: `${base} - ${subVal} = ${ans}`
         };
-      }
+      },
+
+      // Backward-compatibility aliases
+      multiTermMixed: (id) => ArchetypesAdditionSubtraction.twoDigitMultiTerm(id),
+      threeDigitSpeed: (id) => ArchetypesAdditionSubtraction.threeDigitMultiTerm(id),
+      dilrColumnSum: (id) => ArchetypesAdditionSubtraction.twoDigitColumnSum(id)
     };
 
     // --- TRACK 6: CROSS-TOPIC HYBRID SYNTHESIZERS ---
@@ -3032,11 +3198,26 @@
         activeGenerators.push(ArchetypesFactorials.factorialCompound);
       }
 
-      // Category 5: Addition & Subtraction
+      // Category 5: Addition & Subtraction (Significantly Boosted Frequency: Both 2-Digit & 3-Digit Versions)
       if (enabledTopics.has('add_sub')) {
-        activeGenerators.push(ArchetypesAdditionSubtraction.multiTermMixed);
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitSpeed);
-        activeGenerators.push(ArchetypesAdditionSubtraction.dilrColumnSum);
+        // 2-Digit Sprints & Chains (Multi-weighted for high frequency)
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);       // High weight
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);  // High weight
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitMultiTerm);
+        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitColumnSum);
+
+        // 3-Digit Sprints & Chains (Multi-weighted for high frequency)
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);     // High weight
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm);
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm); // High weight
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitMultiTerm);
+        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitColumnSum);
+
+        // Mixed 2D + 3D Adjustments & Base Complements
+        activeGenerators.push(ArchetypesAdditionSubtraction.mixedDigitsSpeed);
         activeGenerators.push(ArchetypesAdditionSubtraction.complementarySubtraction);
       }
 

@@ -1,7 +1,7 @@
 // Calculation Rush - Progressive Web App Service Worker
 // Strategy: Network-First with Cache Fallback for Seamless Auto-Updates & 100% Offline Support
 
-const CACHE_NAME = 'calculation-rush-v1';
+const CACHE_NAME = 'calculation-rush-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
