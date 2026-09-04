@@ -1773,6 +1773,9 @@
         case 'add_sub':
           sec += c.terms * (c.is3Digit ? 1.3 : 1.0);
           break;
+        case 'comb':
+          sec += (c.n <= 7 ? 2.5 : 3.5);
+          break;
       }
     });
 
@@ -1918,10 +1921,22 @@
         const pool = configDifficulty === 'easy' ? EASY_SQUARES : HIGH_YIELD_SQUARES;
         const sq = pickRandom(pool);
         const sqVal = sq * sq;
-        const template = randInt(1, 3);
-        let expr, ans, offset, shortcut;
+        const template = randInt(0, 3);
+        let expr, ans, offset, shortcut, targetSec;
 
-        if (template === 1) { // sq² + offset
+        if (template === 0) { // Pure square recall
+          ans = sqVal;
+          expr = `${sq}²`;
+          shortcut = `Instant Recall: ${sq}² = ${sqVal}`;
+          targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }]);
+          return {
+            family: `sq_${sq}`,
+            signature: `sq_${sq}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Recall: ${sq}² = ${sqVal}`,
+            shortcut
+          };
+        } else if (template === 1) { // sq² + offset
           offset = randInt(25, configDifficulty === 'hard' ? 240 : 160);
           ans = sqVal + offset;
           expr = `${sq}² + ${offset}`;
@@ -1938,7 +1953,7 @@
           shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${offset} - ${sqVal} = ${ans}`;
         }
 
-        const targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }, { type: 'add_sub', terms: 2 }]);
+        targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `sq_${sq}`,
           signature: `sq_${sq}_${expr}`,
@@ -1954,6 +1969,21 @@
         const k = pickRandom([1, 2, 3, 4, 5, 6, 7, 8, 9]); // 15, 25, 35, 45, 55, 65, 75, 85, 95
         const num = 10 * k + 5;
         const numSq = (k * (k + 1)) * 100 + 25;
+        const isPure = Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = numSq;
+          const expr = `${num}²`;
+          const targetSec = computeDynamicIdealTime([{ type: 'sq', val: 25 }]);
+          return {
+            family: `sq_end5_${num}`,
+            signature: `sq_end5_${num}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Ending in 5 trick: ${num}² = (${k} × ${k + 1})×100 + 25 = ${k * (k + 1)}25 = ${numSq}`,
+            shortcut: `Ending in 5 trick: (${k} × ${k + 1})×100 + 25 = ${numSq}`
+          };
+        }
+
         const offset = randInt(35, 240);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? numSq + offset : numSq - offset;
@@ -2011,12 +2041,26 @@
       // 5. Difference of Squares (a² - b² = (a-b)(a+b))
       differenceOfSquares: (id) => {
         const category = 'Powers';
-        // Pair numbers that add to clean multiples of 10 (e.g. sum = 50, 60, 70, 80, 90, 100)
         const sumTarget = pickRandom([50, 60, 70, 80, 90, 100]);
         const diff = pickRandom([2, 4, 6, 8, 10]);
         const a = (sumTarget + diff) / 2;
         const b = (sumTarget - diff) / 2;
         const diffTerm = (a - b) * (a + b);
+        const isPure = Math.random() < 0.4;
+
+        if (isPure) {
+          const ans = diffTerm;
+          const expr = `${a}² - ${b}²`;
+          const targetSec = computeDynamicIdealTime([{ type: 'sq', val: 20 }, { type: 'add_sub', terms: 2 }]);
+          return {
+            family: `diffsq_${a}_${b}`,
+            signature: `diffsq_${a}_${b}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Use identity: a² - b² = (a - b)(a + b) = (${a} - ${b})(${a} + ${b}) = ${a - b} × ${a + b}`,
+            shortcut: `Step 1: (${a} - ${b})(${a} + ${b}) = ${a - b} × ${a + b} = ${diffTerm}`
+          };
+        }
+
         const offset = randInt(25, 180);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? diffTerm + offset : Math.abs(diffTerm - offset);
@@ -2037,6 +2081,21 @@
         const pool = configDifficulty === 'easy' ? [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 25] : [14, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
         const base = pickRandom(pool);
         const sqNum = base * base;
+        const isPure = Math.random() < 0.4;
+
+        if (isPure) {
+          const ans = base;
+          const expr = `√${sqNum}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'root', isCube: false }]);
+          return {
+            family: `sqrt_${base}`,
+            signature: `sqrt_${base}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Recall: ${base}² = ${sqNum} ➔ √${sqNum} = ${base}`,
+            shortcut: `Instant Recall: √${sqNum} = ${base}`
+          };
+        }
+
         const offset = randInt(25, 180);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? base + offset : Math.abs(base - offset);
@@ -2058,6 +2117,34 @@
         const pool = configDifficulty === 'easy' ? EASY_CUBES : (configDifficulty === 'hard' ? HARD_CUBES : CORE_CUBES);
         const cb = pickRandom(pool);
         const cbVal = cb * cb * cb;
+        const isPure = Math.random() < 0.35;
+
+        if (isPure) {
+          if (isRoot) {
+            const ans = cb;
+            const expr = `∛${cbVal}`;
+            const targetSec = computeDynamicIdealTime([{ type: 'root', isCube: true }]);
+            return {
+              family: `cbrt_${cb}`,
+              signature: `cbrt_${cb}_pure`,
+              id, category: 'Roots & Decimals', expr, ans, targetSec,
+              hint: `Recall: ${cb}³ = ${cbVal} ➔ ∛${cbVal} = ${cb}`,
+              shortcut: `Instant Recall: ∛${cbVal} = ${cb}`
+            };
+          } else {
+            const ans = cbVal;
+            const expr = `${cb}³`;
+            const targetSec = computeDynamicIdealTime([{ type: 'cb', val: cb }]);
+            return {
+              family: `cube_${cb}`,
+              signature: `cube_${cb}_pure`,
+              id, category, expr, ans, targetSec,
+              hint: `Recall: ${cb}³ = ${cbVal}`,
+              shortcut: `Instant Recall: ${cb}³ = ${cbVal}`
+            };
+          }
+        }
+
         const offset = randInt(35, 260);
         const isPlus = Math.random() > 0.45;
 
@@ -2098,10 +2185,26 @@
         else if (base === 6) { exp = randInt(2, 3); val = pow6[exp]; }
         else { exp = randInt(2, 3); val = pow7[exp]; }
 
-        const offset = randInt(25, 180);
+        const isPure = Math.random() < 0.35;
+        if (isPure) {
+          const ans = val;
+          const expr = `${base}^${exp}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'pow23', base, exp }]);
+          return {
+            family: `pow_${base}_${exp}`,
+            signature: `pow_${base}_${exp}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Recall: ${base}^${exp} = ${val}`,
+            shortcut: `Instant Recall: ${base}^${exp} = ${val}`
+          };
+        }
+
         const isPlus = Math.random() > 0.45;
-        const ans = isPlus ? val + offset : val - offset;
-        const expr = `${base}^${exp} ${isPlus ? '+' : '-'} ${offset}`;
+        const canSub = val > 35;
+        const actualPlus = isPlus || !canSub;
+        const offset = randInt(20, actualPlus ? 180 : Math.min(val - 10, 160));
+        const ans = actualPlus ? val + offset : val - offset;
+        const expr = `${base}^${exp} ${actualPlus ? '+' : '-'} ${offset}`;
         const targetSec = computeDynamicIdealTime([{ type: 'pow23', base, exp }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `pow_${base}_${exp}`,
@@ -2109,6 +2212,115 @@
           id, category, expr, ans, targetSec,
           hint: `Recall: ${base}^${exp} = ${val}`,
           shortcut: `Step 1: ${base}^${exp} = ${val} ➔ Step 2: ${val} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+        };
+      },
+
+      // 9. Dual Square Combinations & Pythagorean Arithmetic (a² ± b²)
+      dualSquares: (id) => {
+        const category = 'Powers';
+        const isPlus = Math.random() > 0.4;
+        const sumPairs = [
+          [12, 16], [15, 20], [7, 24], [10, 24], [17, 14], [18, 12],
+          [19, 11], [13, 16], [14, 15], [21, 12], [22, 11], [15, 17],
+          [16, 18], [20, 25], [13, 14], [16, 17], [15, 18]
+        ];
+        const diffPairs = [
+          [25, 15], [26, 24], [25, 20], [24, 18], [22, 18], [27, 13],
+          [21, 14], [23, 17], [28, 12], [30, 16], [29, 21], [20, 16],
+          [25, 16], [24, 15], [26, 14], [28, 18]
+        ];
+        const pair = pickRandom(isPlus ? sumPairs : diffPairs);
+        const a = pair[0], b = pair[1];
+        const aSq = a * a, bSq = b * b;
+        const ans = isPlus ? aSq + bSq : aSq - bSq;
+        const expr = `${a}² ${isPlus ? '+' : '-'} ${b}²`;
+        const targetSec = computeDynamicIdealTime([{ type: 'sq', val: a }, { type: 'sq', val: b }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dualsq_${a}_${b}`,
+          signature: `dualsq_${a}_${b}_${isPlus ? 'add' : 'sub'}`,
+          id, category, expr, ans, targetSec,
+          hint: `Evaluate both squares: ${a}² = ${aSq} and ${b}² = ${bSq} ➔ ${aSq} ${isPlus ? '+' : '-'} ${bSq} = ${ans}`,
+          shortcut: `Step 1: ${a}² = ${aSq} | ${b}² = ${bSq} ➔ Step 2: ${aSq} ${isPlus ? '+' : '-'} ${bSq} = ${ans}`
+        };
+      },
+
+      // 10. Consecutive Square Midpoints ((m-d)(m+d) = m² - d²)
+      consecutiveSquareProduct: (id) => {
+        const category = 'Powers';
+        const midList = [
+          { m: 20, d: 1 }, { m: 20, d: 2 },
+          { m: 25, d: 1 }, { m: 25, d: 2 },
+          { m: 30, d: 1 }, { m: 30, d: 2 },
+          { m: 15, d: 1 }, { m: 15, d: 2 },
+          { m: 35, d: 1 },
+          { m: 40, d: 1 }, { m: 40, d: 2 },
+          { m: 50, d: 1 }, { m: 50, d: 2 }
+        ];
+        const item = pickRandom(midList);
+        const p1 = item.m - item.d;
+        const p2 = item.m + item.d;
+        const mSq = item.m * item.m;
+        const dSq = item.d * item.d;
+        const ans = mSq - dSq;
+        const expr = `${p1} × ${p2}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'sq', val: item.m }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `consec_sq_${item.m}`,
+          signature: `consec_sq_${p1}_${p2}`,
+          id, category, expr, ans, targetSec,
+          hint: `Midpoint identity: (${item.m} - ${item.d})(${item.m} + ${item.d}) = ${item.m}² - ${item.d}² = ${mSq} - ${dSq} = ${ans}`,
+          shortcut: `Step 1: Midpoint is ${item.m} (diff ${item.d}) ➔ Step 2: ${item.m}² - ${item.d}² = ${mSq} - ${dSq} = ${ans}`
+        };
+      },
+
+      // 11. Chained Radical Arithmetic (√A ± √B)
+      chainedRoots: (id) => {
+        const category = 'Roots & Decimals';
+        const roots = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+        let r1 = pickRandom(roots);
+        let r2 = pickRandom(roots);
+        while (r2 === r1) r2 = pickRandom(roots);
+        if (r1 < r2) { const tmp = r1; r1 = r2; r2 = tmp; }
+        const sq1 = r1 * r1;
+        const sq2 = r2 * r2;
+        const isPlus = Math.random() > 0.45;
+        const ans = isPlus ? r1 + r2 : r1 - r2;
+        const expr = `√${sq1} ${isPlus ? '+' : '-'} √${sq2}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'root', isCube: false }, { type: 'root', isCube: false }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `chainroot_${r1}_${r2}`,
+          signature: `chainroot_${sq1}_${sq2}_${isPlus ? 'add' : 'sub'}`,
+          id, category, expr, ans, targetSec,
+          hint: `Recall roots: √${sq1} = ${r1} and √${sq2} = ${r2} ➔ ${r1} ${isPlus ? '+' : '-'} ${r2} = ${ans}`,
+          shortcut: `Step 1: √${sq1} = ${r1} | √${sq2} = ${r2} ➔ Step 2: ${r1} ${isPlus ? '+' : '-'} ${r2} = ${ans}`
+        };
+      },
+
+      // 12. Cube & Square Composites (c³ ± sq²)
+      cubeSquareComposite: (id) => {
+        const category = 'Powers';
+        const pairs = [
+          { c: 11, sq: 10, op: '-', isCubeDiff: true, v1: 1331, v2: 1000 },
+          { c: 8, sq: 12, op: '+', v1: 512, v2: 144 },
+          { c: 9, sq: 7, op: '-', isCubeDiff: true, v1: 729, v2: 343 },
+          { c: 7, sq: 15, op: '+', v1: 343, v2: 225 },
+          { c: 6, sq: 18, op: '+', v1: 216, v2: 324 },
+          { c: 12, sq: 11, op: '-', v1: 1728, v2: 121 },
+          { c: 8, sq: 16, op: '+', v1: 512, v2: 256 },
+          { c: 10, sq: 14, op: '-', v1: 1000, v2: 196 },
+          { c: 7, sq: 19, op: '+', v1: 343, v2: 361 },
+          { c: 9, sq: 16, op: '+', v1: 729, v2: 256 }
+        ];
+        const item = pickRandom(pairs);
+        const ans = item.op === '+' ? item.v1 + item.v2 : item.v1 - item.v2;
+        const expr = item.isCubeDiff ? `${item.c}³ - ${item.sq}³` : `${item.c}³ ${item.op} ${item.sq}²`;
+        const targetSec = computeDynamicIdealTime([{ type: 'cb', val: item.c }, { type: 'sq', val: item.sq }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `cb_sq_${item.c}_${item.sq}`,
+          signature: `cb_sq_${item.c}_${item.sq}_${item.op}`,
+          id, category, expr, ans, targetSec,
+          hint: item.isCubeDiff ? `Recall cubes: ${item.c}³ = ${item.v1}, ${item.sq}³ = ${item.v2} ➔ ${item.v1} - ${item.v2} = ${ans}` : `Recall: ${item.c}³ = ${item.v1}, ${item.sq}² = ${item.v2} ➔ ${item.v1} ${item.op} ${item.v2} = ${ans}`,
+          shortcut: `Step 1: ${item.v1} | ${item.v2} ➔ Step 2: ${item.v1} ${item.op} ${item.v2} = ${ans}`
         };
       }
     };
@@ -2124,6 +2336,21 @@
         const multChoice = pickRandom(multipliers);
         const base = f.denom * multChoice * 10;
         const fracTerm = Math.round((base / f.denom) * f.mult);
+        const isPure = Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = fracTerm;
+          const expr = `${f.p} of ${base}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: f.denom, mult: f.mult }]);
+          return {
+            family: `frac_${f.label}`,
+            signature: `frac_${f.label}_${base}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Fraction equivalence: ${f.p} = ${f.label}`,
+            shortcut: `Step 1: ${f.p} = ${f.label} ➔ (${f.label}) × ${base} = ${ans}`
+          };
+        }
+
         const offset = randInt(35, 190);
         const isPlus = Math.random() > 0.4;
         const ans = isPlus ? fracTerm + offset : Math.abs(fracTerm - offset);
@@ -2211,7 +2438,6 @@
         const category = 'Fractions & %';
         const isFiveEighteenth = Math.random() > 0.5;
         if (isFiveEighteenth) {
-          // e.g. 5/18 of 180, 270, 360, 450, 540, 720, 900, 1080
           const k = pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40, 45, 50, 60] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25, 30]);
           const base = 18 * k * (k < 10 ? 10 : 1);
           const term = Math.round((base / 18) * 5);
@@ -2228,7 +2454,6 @@
             shortcut: `Step 1: 5/18 × ${base} = 5 × ${base / 18} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         } else {
-          // e.g. 18/5 of 120, 150, 180, 240, 350, 450, 650, 750, 850
           const k = pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55, 65, 75] : [8, 10, 12, 14, 16, 18, 20, 24, 30, 35, 40]);
           const base = 5 * k * (k < 10 ? 10 : 1);
           const term = Math.round((base / 5) * 18);
@@ -2291,6 +2516,60 @@
           id, category, expr, ans, targetSec,
           hint: `Convert both decimals: ${dec1.name} = ${dec1.frac} and ${dec2.name} = ${dec2.frac}`,
           shortcut: `Step 1: (${dec1.frac} × ${base1} = ${val1}) | (${dec2.frac} × ${base2} = ${val2}) ➔ Step 2: ${val1} ${isPlus ? '+' : '-'} ${val2} = ${ans}`
+        };
+      },
+
+      // 8. Distributive Percentage Collapse on Common Base ((P1% ± P2%) of B)
+      distributiveBasePercentage: (id) => {
+        const category = 'Fractions & %';
+        const pairs = [
+          { p1: '37.5%', p2: '12.5%', op: '+', resP: '50%', resFrac: '1/2', denom: 2, mult: 1, bases: [240, 360, 480, 560, 640, 720, 840, 960] },
+          { p1: '62.5%', p2: '37.5%', op: '-', resP: '25%', resFrac: '1/4', denom: 4, mult: 1, bases: [240, 320, 480, 560, 640, 720, 800] },
+          { p1: '58.33%', p2: '41.67%', op: '-', resP: '16.67%', resFrac: '1/6', denom: 6, mult: 1, bases: [360, 480, 600, 720, 840, 960] },
+          { p1: '14.28%', p2: '28.57%', op: '+', resP: '42.85%', resFrac: '3/7', denom: 7, mult: 3, bases: [280, 350, 420, 490, 560, 630, 700] },
+          { p1: '16.67%', p2: '33.33%', op: '+', resP: '50%', resFrac: '1/2', denom: 2, mult: 1, bases: [240, 360, 480, 540, 660, 720] },
+          { p1: '83.33%', p2: '33.33%', op: '-', resP: '50%', resFrac: '1/2', denom: 2, mult: 1, bases: [240, 360, 480, 600, 720] },
+          { p1: '87.5%', p2: '37.5%', op: '-', resP: '50%', resFrac: '1/2', denom: 2, mult: 1, bases: [320, 480, 560, 640, 720, 800] },
+          { p1: '41.67%', p2: '25%', op: '+', resP: '66.67%', resFrac: '2/3', denom: 3, mult: 2, bases: [240, 360, 480, 600, 720] },
+          { p1: '71.43%', p2: '28.57%', op: '-', resP: '42.86%', resFrac: '3/7', denom: 7, mult: 3, bases: [280, 350, 420, 490, 560, 630] }
+        ];
+        const item = pickRandom(pairs);
+        const base = pickRandom(item.bases);
+        const ans = Math.round((base / item.denom) * item.mult);
+        const expr = `(${item.p1} of ${base}) ${item.op} (${item.p2} of ${base})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: item.denom, mult: item.mult }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dist_pct_${item.resFrac}`,
+          signature: `dist_pct_${item.p1}_${item.p2}_${base}`,
+          id, category, expr, ans, targetSec,
+          hint: `Combine over common base ${base}: (${item.p1} ${item.op} ${item.p2}) = ${item.resP} (${item.resFrac}) ➔ ${item.resFrac} × ${base} = ${ans}`,
+          shortcut: `Step 1: Common base ${base} ➔ ${item.p1} ${item.op} ${item.p2} = ${item.resP} (${item.resFrac}) ➔ Step 2: ${item.resFrac} × ${base} = ${ans}`
+        };
+      },
+
+      // 9. Successive Chained Multipliers (P1% of (P2% of B))
+      successivePercentages: (id) => {
+        const category = 'Fractions & %';
+        const pairs = [
+          { p1: '75%', p2: '80%', fCombined: '3/5 (60%)', denom: 5, mult: 3, bases: [250, 350, 450, 500, 600, 750] },
+          { p1: '50%', p2: '66.67%', fCombined: '1/3 (33.33%)', denom: 3, mult: 1, bases: [180, 240, 300, 360, 450, 540, 600] },
+          { p1: '25%', p2: '60%', fCombined: '3/20 (15%)', denom: 20, mult: 3, bases: [200, 300, 400, 500, 600] },
+          { p1: '37.5%', p2: '80%', fCombined: '3/10 (30%)', denom: 10, mult: 3, bases: [300, 400, 500, 600, 700, 800] },
+          { p1: '12.5%', p2: '80%', fCombined: '1/10 (10%)', denom: 10, mult: 1, bases: [400, 500, 600, 700, 800, 900] },
+          { p1: '33.33%', p2: '75%', fCombined: '1/4 (25%)', denom: 4, mult: 1, bases: [240, 320, 360, 480, 520, 640] },
+          { p1: '62.5%', p2: '40%', fCombined: '1/4 (25%)', denom: 4, mult: 1, bases: [240, 320, 400, 480, 560, 640] }
+        ];
+        const item = pickRandom(pairs);
+        const base = pickRandom(item.bases);
+        const ans = Math.round((base / item.denom) * item.mult);
+        const expr = `${item.p1} of (${item.p2} of ${base})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: item.denom, mult: item.mult }, { type: 'mult_dec', isDecimal: false }]);
+        return {
+          family: `chain_pct_${item.denom}_${item.mult}`,
+          signature: `chain_pct_${item.p1}_${item.p2}_${base}`,
+          id, category, expr, ans, targetSec,
+          hint: `Multiply fraction equivalents: ${item.p1} × ${item.p2} = ${item.fCombined} ➔ ${item.fCombined} of ${base} = ${ans}`,
+          shortcut: `Step 1: Chained fraction = ${item.fCombined} ➔ Step 2: ${item.mult}/${item.denom} × ${base} = ${ans}`
         };
       }
     };
@@ -2589,7 +2868,22 @@
         const t = pickRandom(tPool);
         const m = randInt(4, 9);
         const tableTerm = t * m;
-        const offset = randInt(35, 180);
+        const isPure = Math.random() < 0.4;
+
+        if (isPure) {
+          const ans = tableTerm;
+          const expr = `${t} × ${m}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'table', t, m }]);
+          return {
+            family: `tbl_${t}`,
+            signature: `tbl_${t}_${m}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Table of ${t}: ${t} × ${m} = ${tableTerm}`,
+            shortcut: `Recall Table: ${t} × ${m} = ${tableTerm}`
+          };
+        }
+
+        const offset = randInt(25, Math.min(tableTerm - 10, 160));
         const isPlus = Math.random() > 0.5;
         const ans = isPlus ? tableTerm + offset : tableTerm - offset;
         const expr = `(${t} × ${m}) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2600,6 +2894,109 @@
           id, category, expr, ans, targetSec,
           hint: `Table of ${t}: ${t} × ${m} = ${tableTerm}`,
           shortcut: `Step 1: ${t} × ${m} = ${tableTerm} ➔ Step 2: ${tableTerm} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+        };
+      },
+
+      // 7. Distributive Factoring (T × A ± T × B = T × (A ± B))
+      commonFactorDistributive: (id) => {
+        const category = 'Tables & Products';
+        const pairs = [
+          { t: 17, a: 64, b: 36, op: '+', sum: 100 },
+          { t: 19, a: 73, b: 27, op: '+', sum: 100 },
+          { t: 16, a: 76, b: 24, op: '+', sum: 100 },
+          { t: 18, a: 68, b: 32, op: '+', sum: 100 },
+          { t: 23, a: 55, b: 45, op: '+', sum: 100 },
+          { t: 24, a: 63, b: 37, op: '+', sum: 100 },
+          { t: 27, a: 85, b: 15, op: '+', sum: 100 },
+          { t: 14, a: 58, b: 42, op: '+', sum: 100 },
+          { t: 29, a: 67, b: 33, op: '+', sum: 100 },
+          { t: 18, a: 34, b: 16, op: '+', sum: 50 },
+          { t: 24, a: 38, b: 12, op: '+', sum: 50 },
+          { t: 16, a: 27, b: 23, op: '+', sum: 50 },
+          { t: 26, a: 31, b: 19, op: '+', sum: 50 },
+          { t: 22, a: 35, b: 15, op: '+', sum: 50 },
+          { t: 14, a: 74, b: 24, op: '-', sum: 50 },
+          { t: 18, a: 85, b: 35, op: '-', sum: 50 },
+          { t: 23, a: 68, b: 18, op: '-', sum: 50 },
+          { t: 19, a: 135, b: 35, op: '-', sum: 100 },
+          { t: 17, a: 146, b: 46, op: '-', sum: 100 },
+          { t: 16, a: 128, b: 28, op: '-', sum: 100 }
+        ];
+        const item = pickRandom(pairs);
+        const ans = item.t * item.sum;
+        const expr = `(${item.t} × ${item.a}) ${item.op} (${item.t} × ${item.b})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'table', t: item.t, m: 5 }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dist_mult_${item.t}`,
+          signature: `dist_mult_${item.t}_${item.a}_${item.b}`,
+          id, category, expr, ans, targetSec,
+          hint: `Distributive property: Factor out ${item.t} ➔ ${item.t} × (${item.a} ${item.op} ${item.b}) = ${item.t} × ${item.sum} = ${ans}`,
+          shortcut: `Step 1: Common factor ${item.t} ➔ Step 2: ${item.a} ${item.op} ${item.b} = ${item.sum} ➔ Step 3: ${item.t} × ${item.sum} = ${ans}`
+        };
+      },
+
+      // 8. Double & Halve Strategy (Even × 5-ended number)
+      doubleAndHalve: (id) => {
+        const category = 'Tables & Products';
+        const pairs = [
+          { even: 18, five: 35, h: 9, d: 70 },
+          { even: 24, five: 45, h: 12, d: 90 },
+          { even: 16, five: 75, h: 8, d: 150 },
+          { even: 28, five: 25, h: 14, d: 50 },
+          { even: 32, five: 15, h: 16, d: 30 },
+          { even: 36, five: 45, h: 18, d: 90 },
+          { even: 44, five: 35, h: 22, d: 70 },
+          { even: 14, five: 85, h: 7, d: 170 },
+          { even: 26, five: 45, h: 13, d: 90 },
+          { even: 22, five: 75, h: 11, d: 150 },
+          { even: 48, five: 15, h: 24, d: 30 },
+          { even: 16, five: 85, h: 8, d: 170 },
+          { even: 34, five: 25, h: 17, d: 50 },
+          { even: 24, five: 35, h: 12, d: 70 },
+          { even: 42, five: 45, h: 21, d: 90 }
+        ];
+        const item = pickRandom(pairs);
+        const ans = item.even * item.five;
+        const expr = `${item.even} × ${item.five}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'table', t: item.h, m: 7 }]);
+        return {
+          family: `dbl_hlv_${item.even}_${item.five}`,
+          signature: `dbl_hlv_${item.even}_${item.five}`,
+          id, category, expr, ans, targetSec,
+          hint: `Double & Halve: Halve ${item.even} = ${item.h}, Double ${item.five} = ${item.d} ➔ ${item.h} × ${item.d} = ${ans}`,
+          shortcut: `Step 1: Halve ${item.even} ➔ ${item.h} | Double ${item.five} ➔ ${item.d} ➔ Step 2: ${item.h} × ${item.d} = ${ans}`
+        };
+      },
+
+      // 9. Direct Dual Table Product Arithmetic ((T1 × M1) ± (T2 × M2))
+      directTableDifferences: (id) => {
+        const category = 'Tables & Products';
+        const pairs = [
+          { t1: 19, m1: 8, t2: 17, m2: 7, op: '-' },
+          { t1: 23, m1: 6, t2: 16, m2: 7, op: '+' },
+          { t1: 18, m1: 9, t2: 14, m2: 8, op: '-' },
+          { t1: 24, m1: 5, t2: 19, m2: 6, op: '+' },
+          { t1: 26, m1: 4, t2: 18, m2: 8, op: '+' },
+          { t1: 29, m1: 4, t2: 17, m2: 5, op: '-' },
+          { t1: 28, m1: 5, t2: 19, m2: 6, op: '-' },
+          { t1: 17, m1: 8, t2: 13, m2: 9, op: '+' },
+          { t1: 27, m1: 4, t2: 16, m2: 6, op: '+' },
+          { t1: 23, m1: 7, t2: 18, m2: 8, op: '-' },
+          { t1: 19, m1: 9, t2: 24, m2: 6, op: '+' },
+          { t1: 26, m1: 5, t2: 14, m2: 9, op: '+' }
+        ];
+        const item = pickRandom(pairs);
+        const p1 = item.t1 * item.m1;
+        const p2 = item.t2 * item.m2;
+        const ans = item.op === '+' ? p1 + p2 : p1 - p2;
+        const expr = `(${item.t1} × ${item.m1}) ${item.op} (${item.t2} × ${item.m2})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'table', t: item.t1, m: item.m1 }, { type: 'table', t: item.t2, m: item.m2 }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `diff_tbl_${item.t1}_${item.t2}`,
+          signature: `diff_tbl_${item.t1}_${item.m1}_${item.t2}_${item.m2}_${item.op}`,
+          id, category, expr, ans, targetSec,
+          hint: `Evaluate tables: ${item.t1} × ${item.m1} = ${p1} and ${item.t2} × ${item.m2} = ${p2} ➔ ${p1} ${item.op} ${p2} = ${ans}`,
+          shortcut: `Step 1: ${p1} | ${p2} ➔ Step 2: ${p1} ${item.op} ${p2} = ${ans}`
         };
       }
     };
@@ -2618,6 +3015,21 @@
           { n: 5, d: 3, val: 20 }
         ];
         const pair = pickRandom(pairs);
+        const isPure = Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = pair.val;
+          const expr = `${pair.n}! / ${pair.d}!`;
+          const targetSec = computeDynamicIdealTime([{ type: 'fact_ratio', n: pair.n, d: pair.d, mult: 1 }]);
+          return {
+            family: `fact_${pair.n}_${pair.d}`,
+            signature: `fact_${pair.n}_${pair.d}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${Array.from({length: pair.n - pair.d}, (_, i) => pair.n - i).join(' × ')} = ${pair.val}`,
+            shortcut: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${pair.val}`
+          };
+        }
+
         const mult = randInt(2, 6);
         const prod = pair.val * mult;
         const offset = randInt(30, 220);
@@ -2639,6 +3051,21 @@
         const n = randInt(4, 6);
         const mult = randInt(2, 7);
         const factTerm = factVals[n] * mult;
+        const isPure = Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = factTerm;
+          const expr = `${n}! × ${mult}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'fact', n, mult }]);
+          return {
+            family: `fact_${n}`,
+            signature: `fact_${n}_${mult}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Recall: ${n}! = ${factVals[n]}`,
+            shortcut: `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm}`
+          };
+        }
+
         const offset = randInt(35, 180);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? factTerm + offset : Math.abs(factTerm - offset);
@@ -2650,6 +3077,103 @@
           id, category, expr, ans, targetSec,
           hint: `Recall: ${n}! = ${factVals[n]}`,
           shortcut: `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm} ➔ Step 2: ${ans}`
+        };
+      },
+
+      // 3. Combinatorics Evaluations (nCr recall and dual arithmetic)
+      combinatorics: (id) => {
+        const category = 'Factorials';
+        const combList = [
+          { n: 5, r: 2, val: 10 },
+          { n: 5, r: 3, val: 10 },
+          { n: 6, r: 2, val: 15 },
+          { n: 6, r: 3, val: 20 },
+          { n: 6, r: 4, val: 15 },
+          { n: 7, r: 2, val: 21 },
+          { n: 7, r: 3, val: 35 },
+          { n: 7, r: 4, val: 35 },
+          { n: 7, r: 5, val: 21 },
+          { n: 8, r: 2, val: 28 },
+          { n: 8, r: 3, val: 56 },
+          { n: 8, r: 4, val: 70 },
+          { n: 9, r: 2, val: 36 },
+          { n: 9, r: 3, val: 84 },
+          { n: 10, r: 2, val: 45 },
+          { n: 10, r: 3, val: 120 }
+        ];
+
+        const isDual = Math.random() > 0.45;
+        if (isDual) {
+          let c1 = pickRandom(combList);
+          let c2 = pickRandom(combList);
+          while (c2 === c1) c2 = pickRandom(combList);
+          const isPlus = Math.random() > 0.45;
+          const first = (isPlus || c1.val >= c2.val) ? c1 : c2;
+          const second = (first === c1) ? c2 : c1;
+          const ans = isPlus ? first.val + second.val : first.val - second.val;
+          const expr = `(${first.n}C${first.r}) ${isPlus ? '+' : '-'} (${second.n}C${second.r})`;
+          const targetSec = computeDynamicIdealTime([{ type: 'comb', n: first.n }, { type: 'comb', n: second.n }, { type: 'add_sub', terms: 2 }]);
+          return {
+            family: `comb_${first.n}_${second.n}`,
+            signature: `comb_${first.n}_${first.r}_${second.n}_${second.r}_${isPlus ? 'add' : 'sub'}`,
+            id, category, expr, ans, targetSec,
+            hint: `Combinatorics: ${first.n}C${first.r} = ${first.val} and ${second.n}C${second.r} = ${second.val} ➔ ${first.val} ${isPlus ? '+' : '-'} ${second.val} = ${ans}`,
+            shortcut: `Step 1: ${first.n}C${first.r} = ${first.val} | ${second.n}C${second.r} = ${second.val} ➔ Step 2: ${ans}`
+          };
+        } else {
+          const c = pickRandom(combList);
+          const isPure = Math.random() < 0.4;
+          if (isPure) {
+            const ans = c.val;
+            const expr = `${c.n}C${c.r}`;
+            const targetSec = computeDynamicIdealTime([{ type: 'comb', n: c.n }]);
+            return {
+              family: `comb_${c.n}_${c.r}`,
+              signature: `comb_${c.n}_${c.r}_pure`,
+              id, category, expr, ans, targetSec,
+              hint: `Recall: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!) = ${c.val}`,
+              shortcut: `Instant Recall: ${c.n}C${c.r} = ${c.val}`
+            };
+          }
+
+          const offset = randInt(15, 80);
+          const isPlus = Math.random() > 0.45;
+          const ans = isPlus ? c.val + offset : Math.abs(c.val - offset);
+          const expr = isPlus ? `(${c.n}C${c.r}) + ${offset}` : (c.val >= offset ? `(${c.n}C${c.r}) - ${offset}` : `${offset} - (${c.n}C${c.r})`);
+          const targetSec = computeDynamicIdealTime([{ type: 'comb', n: c.n }, { type: 'add_sub', terms: 2 }]);
+          return {
+            family: `comb_${c.n}_${c.r}`,
+            signature: `comb_${c.n}_${c.r}_${expr}`,
+            id, category, expr, ans, targetSec,
+            hint: `Evaluate combination: ${c.n}C${c.r} = ${c.val} ➔ ${expr} = ${ans}`,
+            shortcut: `Step 1: ${c.n}C${c.r} = ${c.val} ➔ Step 2: ${ans}`
+          };
+        }
+      },
+
+      // 4. Dual Factorial Ratio Arithmetic ((N1! / D1!) ± (N2! / D2!))
+      dualFactorialRatio: (id) => {
+        const category = 'Factorials';
+        const pairs = [
+          { n1: 7, d1: 5, v1: 42, n2: 6, d2: 4, v2: 30, op: '+' },
+          { n1: 8, d1: 6, v1: 56, n2: 5, d2: 3, v2: 20, op: '-' },
+          { n1: 9, d1: 7, v1: 72, n2: 7, d2: 5, v2: 42, op: '-' },
+          { n1: 8, d1: 6, v1: 56, n2: 6, d2: 4, v2: 30, op: '+' },
+          { n1: 6, d1: 4, v1: 30, n2: 8, d2: 7, v2: 8, op: '+' },
+          { n1: 7, d1: 4, v1: 210, n2: 6, d2: 3, v2: 120, op: '-' },
+          { n1: 9, d1: 7, v1: 72, n2: 5, d2: 3, v2: 20, op: '+' },
+          { n1: 8, d1: 5, v1: 336, n2: 6, d2: 3, v2: 120, op: '-' }
+        ];
+        const item = pickRandom(pairs);
+        const ans = item.op === '+' ? item.v1 + item.v2 : item.v1 - item.v2;
+        const expr = `(${item.n1}! / ${item.d1}!) ${item.op} (${item.n2}! / ${item.d2}!)`;
+        const targetSec = computeDynamicIdealTime([{ type: 'fact_ratio', n: item.n1, d: item.d1, mult: 1 }, { type: 'fact_ratio', n: item.n2, d: item.d2, mult: 1 }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `dualfact_${item.n1}_${item.n2}`,
+          signature: `dualfact_${item.n1}_${item.d1}_${item.n2}_${item.d2}_${item.op}`,
+          id, category, expr, ans, targetSec,
+          hint: `Evaluate both: ${item.n1}!/${item.d1}! = ${item.v1} and ${item.n2}!/${item.d2}! = ${item.v2} ➔ ${item.v1} ${item.op} ${item.v2} = ${ans}`,
+          shortcut: `Step 1: ${item.v1} | ${item.v2} ➔ Step 2: ${item.v1} ${item.op} ${item.v2} = ${ans}`
         };
       }
     };
@@ -2833,14 +3357,15 @@
         const category = 'Addition & Subtraction';
         const t1 = randInt(220, 580);
         const t2 = randInt(150, 460);
+        let running = t1 + t2;
+
         const t3 = randInt(120, 380);
+        const isT3Minus = running > t3 + 80 && Math.random() < 0.55;
+        const runningAfterT3 = isT3Minus ? running - t3 : running + t3;
+
         const t4 = randInt(110, 290);
-        const isT3Minus = Math.random() > 0.35;
-        const isT4Minus = Math.random() > 0.45;
-        
-        let ans = t1 + t2;
-        ans = isT3Minus ? ans - t3 : ans + t3;
-        ans = isT4Minus ? ans - t4 : ans + t4;
+        const isT4Minus = runningAfterT3 > t4 + 50 && Math.random() < 0.55;
+        const ans = isT4Minus ? runningAfterT3 - t4 : runningAfterT3 + t4;
 
         const expr = `${t1} + ${t2} ${isT3Minus ? '-' : '+'} ${t3} ${isT4Minus ? '-' : '+'} ${t4}`;
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 4, is3Digit: true }]);
@@ -3002,6 +3527,59 @@
           hint: `Square root: √${sqNum} = ${base} | Table: ${t} × ${m} = ${tableTerm}`,
           shortcut: `Step 1: √${sqNum} = ${base} ➔ Step 2: ${t} × ${m} = ${tableTerm} ➔ Step 3: ${ans}`
         };
+      },
+
+      // 5. Roots & Factorials Composite (√A ± (N! / D!))
+      rootsFactorials: (id) => {
+        const category = 'Roots & Decimals';
+        const rootPairs = [
+          { r: 24, sq: 576, n: 6, d: 4, fVal: 30, op: '+' },
+          { r: 28, sq: 784, n: 5, d: 3, fVal: 20, op: '-' },
+          { r: 30, sq: 900, n: 7, d: 5, fVal: 42, op: '+' },
+          { r: 25, sq: 625, n: 6, d: 4, fVal: 30, op: '+' },
+          { r: 22, sq: 484, n: 8, d: 6, fVal: 56, op: '+' },
+          { r: 26, sq: 676, n: 5, d: 3, fVal: 20, op: '-' },
+          { r: 27, sq: 729, n: 7, d: 5, fVal: 42, op: '+' }
+        ];
+        const item = pickRandom(rootPairs);
+        const ans = item.op === '+' ? item.r + item.fVal : item.r - item.fVal;
+        const expr = `√${item.sq} ${item.op} (${item.n}! / ${item.d}!)`;
+        const targetSec = computeDynamicIdealTime([{ type: 'root', isCube: false }, { type: 'fact_ratio', n: item.n, d: item.d, mult: 1 }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `hyb_rf_${item.r}_${item.n}`,
+          signature: `hyb_rf_${item.sq}_${item.n}_${item.d}_${item.op}`,
+          id, category, expr, ans, targetSec,
+          hint: `Root: √${item.sq} = ${item.r} | Factorial: ${item.n}!/${item.d}! = ${item.fVal} ➔ ${item.r} ${item.op} ${item.fVal} = ${ans}`,
+          shortcut: `Step 1: √${item.sq} = ${item.r} | ${item.n}!/${item.d}! = ${item.fVal} ➔ Step 2: ${ans}`
+        };
+      },
+
+      // 6. Powers & Combinatorics Composite (sq² ± nCr)
+      powersCombinatorics: (id) => {
+        const category = 'Powers';
+        const sq = pickRandom([14, 15, 16, 17, 18, 19, 21, 22]);
+        const sqVal = sq * sq;
+        const combList = [
+          { n: 7, r: 2, val: 21 },
+          { n: 8, r: 3, val: 56 },
+          { n: 6, r: 2, val: 15 },
+          { n: 6, r: 3, val: 20 },
+          { n: 7, r: 3, val: 35 },
+          { n: 8, r: 2, val: 28 },
+          { n: 9, r: 2, val: 36 }
+        ];
+        const c = pickRandom(combList);
+        const isPlus = Math.random() > 0.45;
+        const ans = isPlus ? sqVal + c.val : sqVal - c.val;
+        const expr = `${sq}² ${isPlus ? '+' : '-'} (${c.n}C${c.r})`;
+        const targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }, { type: 'comb', n: c.n }, { type: 'add_sub', terms: 2 }]);
+        return {
+          family: `hyb_pc_${sq}_${c.n}`,
+          signature: `hyb_pc_${sq}_${c.n}_${c.r}_${isPlus ? 'add' : 'sub'}`,
+          id, category, expr, ans, targetSec,
+          hint: `Recall: ${sq}² = ${sqVal} and ${c.n}C${c.r} = ${c.val} ➔ ${sqVal} ${isPlus ? '+' : '-'} ${c.val} = ${ans}`,
+          shortcut: `Step 1: ${sq}² = ${sqVal} | ${c.n}C${c.r} = ${c.val} ➔ Step 2: ${ans}`
+        };
       }
     };
 
@@ -3086,7 +3664,7 @@
           ans = tableTerm + offset;
           expr = `(${t} × ${m}) + ${offset}`;
         } else if (template === 2) {
-          const offset = randInt(35, 180);
+          const offset = randInt(25, Math.min(tableTerm - 10, 160));
           ans = tableTerm - offset;
           expr = `(${t} × ${m}) - ${offset}`;
         } else {
@@ -3158,10 +3736,13 @@
       if (enabledTopics.has('powers')) {
         activeGenerators.push(ArchetypesPowers.directSquare);
         activeGenerators.push(ArchetypesPowers.endingInFiveSquare);
+        activeGenerators.push(ArchetypesPowers.dualSquares);
+        activeGenerators.push(ArchetypesPowers.consecutiveSquareProduct);
         if (configDifficulty !== 'easy') {
           activeGenerators.push(ArchetypesPowers.base50Squaring);
           activeGenerators.push(ArchetypesPowers.base100Squaring);
           activeGenerators.push(ArchetypesPowers.differenceOfSquares);
+          activeGenerators.push(ArchetypesPowers.cubeSquareComposite);
         }
         activeGenerators.push(ArchetypesPowers.cubesAndRoots);
         activeGenerators.push(ArchetypesPowers.higherPowers);
@@ -3170,6 +3751,8 @@
       // Category 2: Fractions & Percentages
       if (enabledTopics.has('fractions')) {
         activeGenerators.push(ArchetypesFractions.clusteredPercentage);
+        activeGenerators.push(ArchetypesFractions.distributiveBasePercentage);
+        activeGenerators.push(ArchetypesFractions.successivePercentages);
         activeGenerators.push(ArchetypesFractions.percentageReversal);
         activeGenerators.push(ArchetypesFractions.speedConversion);
         activeGenerators.push(ArchetypesFractions.percentageGrowthIndexing);
@@ -3182,6 +3765,9 @@
       if (enabledTopics.has('tables')) {
         activeGenerators.push(ArchetypesMultiplication.breakApartMultiplication);
         activeGenerators.push(ArchetypesMultiplication.nearBaseMultiplication);
+        activeGenerators.push(ArchetypesMultiplication.commonFactorDistributive);
+        activeGenerators.push(ArchetypesMultiplication.doubleAndHalve);
+        activeGenerators.push(ArchetypesMultiplication.directTableDifferences);
         activeGenerators.push(ArchetypesMultiplication.twinProducts);
         activeGenerators.push(ArchetypesMultiplication.dualProductComposite);
         activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes);
@@ -3196,6 +3782,8 @@
       if (enabledTopics.has('factorials')) {
         activeGenerators.push(ArchetypesFactorials.factorialRatio);
         activeGenerators.push(ArchetypesFactorials.factorialCompound);
+        activeGenerators.push(ArchetypesFactorials.combinatorics);
+        activeGenerators.push(ArchetypesFactorials.dualFactorialRatio);
       }
 
       // Category 5: Addition & Subtraction (Significantly Boosted Frequency: Both 2-Digit & 3-Digit Versions)
@@ -3224,6 +3812,7 @@
       // Category 6: Roots & Decimals
       if (enabledTopics.has('roots_decimals')) {
         activeGenerators.push(ArchetypesPowers.directSquareRoot);
+        activeGenerators.push(ArchetypesPowers.chainedRoots);
         activeGenerators.push(ArchetypesFractions.decimalMultipliers);
         if (configDifficulty !== 'easy') {
           activeGenerators.push(ArchetypesFractions.dualDecimalComposite);
@@ -3239,9 +3828,13 @@
       }
       if (enabledTopics.has('factorials') && enabledTopics.has('powers')) {
         activeGenerators.push(ArchetypesHybrids.factorialsPowers);
+        activeGenerators.push(ArchetypesHybrids.powersCombinatorics);
       }
       if (enabledTopics.has('roots_decimals') && enabledTopics.has('tables')) {
         activeGenerators.push(ArchetypesHybrids.rootsTables);
+      }
+      if (enabledTopics.has('roots_decimals') && enabledTopics.has('factorials')) {
+        activeGenerators.push(ArchetypesHybrids.rootsFactorials);
       }
 
       // Category 8: Sprint Focus Anchors

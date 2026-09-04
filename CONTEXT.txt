@@ -48,6 +48,15 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
 [Prompt 131]: Untimed retry mode completely hides the Time Remaining countdown timer.
 [Prompt 132]: Pause duration is strictly excluded from question solve time and Time Sinks.
 [Prompt 136]: Sprint Focus Anchors Protocol: Silently select 3 target concepts per sprint (Square, Table, Fraction) and weave them repeatedly throughout the quiz across varied arithmetic templates.
+[Prompt 137]: Increase frequency of addition and subtraction; include both 2-digit and 3-digit dedicated archetypes.
+[Prompt 138]: Major Question Generation Engine Update: Combat user drill boredom by eliminating the repetitive (Concept ± offset) formula. Introduce satisfying cognitive simplification archetypes across all tracks:
+  • Pure Recall Isolation: Instant unadorned recall for high-yield squares, square roots, cubes, cube roots, factorials, and tables.
+  • Powers: Dual square arithmetic & Pythagorean triples (17² + 14², 25² - 15² = 400), consecutive square midpoint products ((m-d)(m+d) = m² - d²), chained radical arithmetic (√576 ± √289), cube & square composites (11³ - 10³, 8³ + 12²).
+  • Fractions: Common-base distributive percentage collapse ((37.5% of 480) + (12.5% of 480) = 50% = 240, (58.33% - 41.67%) of 720 = 120), successive chained multipliers (75% of (80% of 600) = 360).
+  • Tables & Products: Common-factor distributive extraction collapsing to round bases ((17 × 64) + (17 × 36) = 17 × 100 = 1700, (18 × 85) - (18 × 35) = 900), double-and-halve strategy (18 × 35 = 9 × 70 = 630, 24 × 45 = 1080), direct dual table arithmetic without offsets ((19 × 8) - (17 × 7) = 33).
+  • Factorials & Combinatorics: CAT Combinatorics evaluations (nCr instant recall and dual combination arithmetic: 7C2 + 6C2 = 36, 8C3 - 26 = 30), dual factorial ratio arithmetic ((7!/5!) + (6!/4!) = 72).
+  • Cross-Topic Hybrids: Roots + Factorials (√576 + (6!/4!) = 54), Powers + Combinatorics (16² + 7C2 = 277).
+  • Service Worker bumped to cache v3 for instant client-side PWA updates.
 
 ================================================================================
 3. QUESTION GENERATION ENGINE RULES & SPECIFICATIONS
@@ -61,17 +70,17 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
      • (Frac% of Base + offset), (Frac% of Base - offset), (Frac% of Base + Table).
 
 2. Dual-Layer Anti-Repetition Cache:
-   - Level 1: 35-question signature buffer (`recentSignatures`) prevents identical questions in a sprint.
-   - Level 2: 6-family buffer (`recentFamilies`) prevents back-to-back testing of the same base element while allowing anchor rotation every 5-7 questions.
+   - Level 1: 60-question signature buffer (`recentSignatures`) prevents identical questions in a sprint.
+   - Level 2: 8-family buffer (`recentFamilies`) prevents back-to-back testing of the same base element while allowing anchor rotation every 5-7 questions.
 
 3. High-Yield Topic Pools:
-   - Powers: Squares (12² to 30² plus 31², 32², 33² with (a+b)² expansion hints: (30+d)² = 900 + 60d + d²), Cubes (7³ to 18³), Base-2 (2¹–2¹²), Base-3 (3¹–3⁷), Base-4 (4¹–4⁶), Base-5 (5¹–5⁶), Base-6 (6¹–6⁵), Base-7 (7¹–7⁴), Difference of Squares (a² - b²), Base 50/100 Near Squaring.
-   - Fractions & %: Denominators 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 18, 20. Percentage reversals (250, 750, 125, 375, 625), km/h factor drills (5/18 and 18/5).
-   - Factorials: High-yield ratios (8!/6!, 7!/5!, 6!/3!) multiplied by scalars and factored with offsets.
-   - Tables & Products: Heavy emphasis on mental prime multiplication and prime division (3, 5, 7, 11, 13, 17, 19, 23, 29) coupled with multi-term operations (never in isolation, never back-to-back), CAT Special Numbers (1001 = 7×11×13, 10001 = 73×137, 111 = 3×37, 10101 = 111×91, 999 = 27×37) with prime factorization hints, Tables 14–29, and Twin Products (x-d)(x+d) around midpoints (25, 30, 35, 40, 50, 60).
+   - Powers: Squares (12² to 30² plus 31², 32², 33² with (a+b)² expansion hints: (30+d)² = 900 + 60d + d²), Pure Square Recall, Dual Squares (a² ± b²), Consecutive Square Products (m² - d²), Cubes (7³ to 18³), Cube Roots, Base-2 to Base-7 powers, Difference of Squares (a² - b² pure and offset), Base 50/100 Near Squaring, Cube & Square composites.
+   - Fractions & %: Denominators 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 18, 20. Pure percentage evaluations, Distributive common-base percentage collapse, Successive chained percentages, Percentage reversals (250, 750, 125, 375, 625), km/h factor drills (5/18 and 18/5), Dual fraction composites.
+   - Factorials & Combinatorics: Pure cancellation (n!/d!), High-yield compound products, Combinatorics (nCr recall and dual arithmetic like 7C2 + 6C2, 8C3 - 26), Dual factorial ratio arithmetic ((7!/5!) ± (6!/4!)).
+   - Tables & Products: Pure table recall (14-29), Common-factor distributive extraction collapsing to 50/100 ((T×A) ± (T×B)), Double-and-halve strategy (even × 5-ended), Direct dual table differences ((T1×M1) ± (T2×M2)), Mental prime multiplication and division (3, 5, 7, 11, 13, 17, 19, 23, 29), CAT Special Numbers (1001, 10001, 111, 10101, 999), Twin Products.
    - Addition & Subtraction: High-frequency weighting (~30% of pool when active); dedicated 2-Digit versions (2-term speed pair, 3-term mixed, 4–5 term chain, DILR column sum), dedicated 3-Digit versions (2-term speed pair, 3-term mixed, 4-term multi-term, DILR column sum), mixed 2D+3D adjustments, and base complementary subtractions (500, 1000, 1500, 2000).
-   - Roots & Decimals: Square roots (14²-36²), Cube roots (7³-19³), Decimal Multipliers (0.375, 0.625, 0.875, 1.25, 1.5, 1.75, 0.833, 1.333, 1.667).
-   - Hybrids: Multi-step cross-topic questions (Powers + Tables, Fractions + Tables, Factorials + Fractions).
+   - Roots & Decimals: Square roots (14²-30² pure and offset), Chained roots (√A ± √B), Cube roots (7³-19³), Decimal Multipliers (0.375, 0.625, 0.875, 1.25, 1.5, 1.75, 0.833, 1.333).
+   - Hybrids: Cross-topic synthesizers (Powers + Fractions, Fractions + Tables, Factorials + Powers, Roots + Tables, Roots + Factorials, Powers + Combinatorics).
 
 4. Scoring & Feedback:
    - +3 for Correct, -1 for Wrong, 0 for Unattempted/Skipped.
@@ -85,12 +94,13 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
 ================================================================================
 • Lines 1–1230: Embedded Dark Glassmorphism CSS Stylesheet
 • Lines 1231–1620: Semantic HTML Views (Home, Rush Arena, Results) and Modals (History, Formulas Reference, Pause, Tour)
-• Lines 1621–1770: High-Yield CAT Data Arrays & Dynamic Ideal Time Calculator
-• Lines 1771–1820: Sprint Anchors State (`sessionAnchors`, `initSessionAnchors()`)
-• Lines 1821–2350: 24 Specialized Question Generators + Anchor Drill Suite + Anti-Repetition Loop
-• Lines 2351–2600: Sprint Execution Engine, Pause Tracking, Input Handling, Transition Locks
-• Lines 2601–2870: Sprint Completion Engine, Analytics Breakdown, History Persistence, Untimed Mistakes Reattempt
-• Lines 2871–3330: Modal Controllers, Reference Data Renderers, Keyboard Shortcuts (A/B/C/D, 1/2/3/4, H, Space, Escape), Feature Tour
+• Lines 1621–1780: High-Yield CAT Data Arrays & Dynamic Ideal Time Calculator
+• Lines 1781–1830: Sprint Anchors State (`sessionAnchors`, `initSessionAnchors()`)
+• Lines 1831–3725: 35 Specialized Question Generators across 7 Tracks + Anti-Repetition Loop
+• Lines 3726–3950: Main Generator Pipeline & Selection Engine
+• Lines 3951–4200: Sprint Execution Engine, Pause Tracking, Input Handling, Transition Locks
+• Lines 4201–4500: Sprint Completion Engine, Analytics Breakdown, History Persistence, Untimed Mistakes Reattempt
+• Lines 4501–4850: Modal Controllers, Reference Data Renderers, Keyboard Shortcuts (A/B/C/D, 1/2/3/4, H, Space, Escape), Feature Tour
 
 ================================================================================
 END OF MASTER CONTEXT
