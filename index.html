@@ -1918,10 +1918,11 @@
       // 1. Direct Square Recall (STRICTLY <= 30)
       directSquare: (id) => {
         const category = 'Powers';
-        const pool = configDifficulty === 'easy' ? EASY_SQUARES : HIGH_YIELD_SQUARES;
+        const pool = configDifficulty === 'easy' ? EASY_SQUARES : (configDifficulty === 'hard' ? [...HIGH_YIELD_SQUARES, 31, 32, 33] : HIGH_YIELD_SQUARES);
         const sq = pickRandom(pool);
         const sqVal = sq * sq;
-        const template = randInt(0, 3);
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.60 : Math.random() < 0.35;
+        const template = isPure ? 0 : randInt(1, 3);
         let expr, ans, offset, shortcut, targetSec;
 
         if (template === 0) { // Pure square recall
@@ -1937,17 +1938,18 @@
             shortcut
           };
         } else if (template === 1) { // sq² + offset
-          offset = randInt(25, configDifficulty === 'hard' ? 240 : 160);
+          offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 30, 40, 50, 100]) : randInt(20, configDifficulty === 'hard' ? 240 : 150);
           ans = sqVal + offset;
           expr = `${sq}² + ${offset}`;
           shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${sqVal} + ${offset} = ${ans}`;
         } else if (template === 2) { // sq² - offset
-          offset = randInt(25, Math.min(sqVal - 10, configDifficulty === 'hard' ? 220 : 140));
+          const maxSub = Math.min(sqVal - 10, configDifficulty === 'hard' ? 220 : 140);
+          offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 30, 50].filter(v => v < sqVal)) : randInt(20, maxSub);
           ans = sqVal - offset;
           expr = `${sq}² - ${offset}`;
           shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${sqVal} - ${offset} = ${ans}`;
         } else { // offset - sq²
-          offset = sqVal + randInt(30, configDifficulty === 'hard' ? 260 : 160);
+          offset = sqVal + (configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 260 : 150));
           ans = offset - sqVal;
           expr = `${offset} - ${sq}²`;
           shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${offset} - ${sqVal} = ${ans}`;
@@ -1966,10 +1968,11 @@
       // 2. Ending in 5 Mental Squaring ((10k+5)² = k(k+1)×100 + 25)
       endingInFiveSquare: (id) => {
         const category = 'Powers';
-        const k = pickRandom([1, 2, 3, 4, 5, 6, 7, 8, 9]); // 15, 25, 35, 45, 55, 65, 75, 85, 95
+        const kList = configDifficulty === 'easy' ? [1, 2, 3, 4] : (configDifficulty === 'normal' ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        const k = pickRandom(kList); // 15, 25, 35, 45, etc.
         const num = 10 * k + 5;
         const numSq = (k * (k + 1)) * 100 + 25;
-        const isPure = Math.random() < 0.35;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.60 : Math.random() < 0.35;
 
         if (isPure) {
           const ans = numSq;
@@ -1984,7 +1987,7 @@
           };
         }
 
-        const offset = randInt(35, 240);
+        const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 75, 100]) : randInt(25, configDifficulty === 'hard' ? 240 : 160);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? numSq + offset : numSq - offset;
         const expr = `${num}² ${isPlus ? '+' : '-'} ${offset}`;
@@ -2001,10 +2004,13 @@
       // 3. Base-50 Near Squaring ((50±d)² = (25±d)×100 + d²)
       base50Squaring: (id) => {
         const category = 'Powers';
-        const diff = pickRandom([-8, -7, -6, -4, -3, -2, -1, 1, 2, 3, 4, 6, 7, 8]);
+        const diffList = configDifficulty === 'hard' 
+          ? [-9, -8, -7, -6, -4, -3, -2, -1, 1, 2, 3, 4, 6, 7, 8, 9] 
+          : [-6, -4, -3, -2, -1, 1, 2, 3, 4, 6];
+        const diff = pickRandom(diffList);
         const num = 50 + diff;
         const numSq = (25 + diff) * 100 + (diff * diff);
-        const offset = randInt(30, 200);
+        const offset = randInt(25, configDifficulty === 'hard' ? 220 : 150);
         const isPlus = Math.random() > 0.5;
         const ans = isPlus ? numSq + offset : numSq - offset;
         const expr = `${num}² ${isPlus ? '+' : '-'} ${offset}`;
@@ -2021,10 +2027,13 @@
       // 4. Base-100 Near Squaring ((100±d)² = (100±2d)×100 + d²)
       base100Squaring: (id) => {
         const category = 'Powers';
-        const diff = pickRandom([-9, -8, -7, -6, -4, -3, -2, -1, 1, 2, 3, 4, 6, 7, 8, 9]);
+        const diffList = configDifficulty === 'hard'
+          ? [-9, -8, -7, -6, -4, -3, -2, -1, 1, 2, 3, 4, 6, 7, 8, 9]
+          : [-6, -4, -3, -2, -1, 1, 2, 3, 4, 6];
+        const diff = pickRandom(diffList);
         const num = 100 + diff;
         const numSq = (100 + 2 * diff) * 100 + (diff * diff);
-        const offset = randInt(35, 240);
+        const offset = randInt(25, configDifficulty === 'hard' ? 240 : 160);
         const isPlus = Math.random() > 0.5;
         const ans = isPlus ? numSq + offset : numSq - offset;
         const expr = `${num}² ${isPlus ? '+' : '-'} ${offset}`;
@@ -2046,7 +2055,7 @@
         const a = (sumTarget + diff) / 2;
         const b = (sumTarget - diff) / 2;
         const diffTerm = (a - b) * (a + b);
-        const isPure = Math.random() < 0.4;
+        const isPure = configDifficulty !== 'hard' || Math.random() < 0.5;
 
         if (isPure) {
           const ans = diffTerm;
@@ -2078,10 +2087,10 @@
       // 6. Direct Square Root Recall (STRICTLY Bounded from 11²=121 to 30²=900)
       directSquareRoot: (id) => {
         const category = 'Roots & Decimals';
-        const pool = configDifficulty === 'easy' ? [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 25] : [14, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+        const pool = configDifficulty === 'easy' ? [12, 13, 14, 15, 16, 17, 18, 19, 20, 25] : [14, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
         const base = pickRandom(pool);
         const sqNum = base * base;
-        const isPure = Math.random() < 0.4;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.4;
 
         if (isPure) {
           const ans = base;
@@ -2096,7 +2105,7 @@
           };
         }
 
-        const offset = randInt(25, 180);
+        const offset = configDifficulty === 'easy' ? randInt(5, 30) : randInt(20, configDifficulty === 'hard' ? 180 : 130);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? base + offset : Math.abs(base - offset);
         const expr = isPlus ? `√${sqNum} + ${offset}` : (base >= offset ? `√${sqNum} - ${offset}` : `${offset} - √${sqNum}`);
@@ -2117,7 +2126,7 @@
         const pool = configDifficulty === 'easy' ? EASY_CUBES : (configDifficulty === 'hard' ? HARD_CUBES : CORE_CUBES);
         const cb = pickRandom(pool);
         const cbVal = cb * cb * cb;
-        const isPure = Math.random() < 0.35;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.35;
 
         if (isPure) {
           if (isRoot) {
@@ -2145,7 +2154,9 @@
           }
         }
 
-        const offset = randInt(35, 260);
+        const offset = configDifficulty === 'easy' 
+          ? (isRoot ? randInt(5, 25) : pickRandom([10, 20, 25, 50]))
+          : randInt(25, configDifficulty === 'hard' ? 260 : 160);
         const isPlus = Math.random() > 0.45;
 
         if (isRoot) {
@@ -2176,16 +2187,22 @@
       // 8. Higher Base Powers (Base 2 to 7)
       higherPowers: (id) => {
         const category = 'Powers';
-        const base = pickRandom([2, 3, 4, 5, 6, 7]);
+        const base = configDifficulty === 'easy' ? pickRandom([2, 3, 5]) : pickRandom([2, 3, 4, 5, 6, 7]);
         let exp, val;
-        if (base === 2) { exp = randInt(5, configDifficulty === 'hard' ? 12 : 10); val = pow2[exp]; }
-        else if (base === 3) { exp = randInt(3, configDifficulty === 'hard' ? 6 : 5); val = pow3[exp]; }
-        else if (base === 4) { exp = randInt(3, configDifficulty === 'hard' ? 5 : 4); val = pow4[exp]; }
-        else if (base === 5) { exp = randInt(3, configDifficulty === 'hard' ? 5 : 4); val = pow5[exp]; }
-        else if (base === 6) { exp = randInt(2, 3); val = pow6[exp]; }
-        else { exp = randInt(2, 3); val = pow7[exp]; }
+        if (configDifficulty === 'easy') {
+          if (base === 2) { exp = randInt(4, 7); val = pow2[exp]; }
+          else if (base === 3) { exp = randInt(3, 4); val = pow3[exp]; }
+          else { exp = randInt(2, 3); val = pow5[exp]; }
+        } else {
+          if (base === 2) { exp = randInt(5, configDifficulty === 'hard' ? 12 : 10); val = pow2[exp]; }
+          else if (base === 3) { exp = randInt(3, configDifficulty === 'hard' ? 6 : 5); val = pow3[exp]; }
+          else if (base === 4) { exp = randInt(3, configDifficulty === 'hard' ? 5 : 4); val = pow4[exp]; }
+          else if (base === 5) { exp = randInt(3, configDifficulty === 'hard' ? 5 : 4); val = pow5[exp]; }
+          else if (base === 6) { exp = randInt(2, 3); val = pow6[exp]; }
+          else { exp = randInt(2, 3); val = pow7[exp]; }
+        }
 
-        const isPure = Math.random() < 0.35;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.6 : Math.random() < 0.35;
         if (isPure) {
           const ans = val;
           const expr = `${base}^${exp}`;
@@ -2202,7 +2219,9 @@
         const isPlus = Math.random() > 0.45;
         const canSub = val > 35;
         const actualPlus = isPlus || !canSub;
-        const offset = randInt(20, actualPlus ? 180 : Math.min(val - 10, 160));
+        const offset = configDifficulty === 'easy' 
+          ? pickRandom([10, 20, 25, 50].filter(v => actualPlus || v < val))
+          : randInt(20, actualPlus ? (configDifficulty === 'hard' ? 240 : 160) : Math.min(val - 10, 160));
         const ans = actualPlus ? val + offset : val - offset;
         const expr = `${base}^${exp} ${actualPlus ? '+' : '-'} ${offset}`;
         const targetSec = computeDynamicIdealTime([{ type: 'pow23', base, exp }, { type: 'add_sub', terms: 2 }]);
@@ -2219,6 +2238,9 @@
       dualSquares: (id) => {
         const category = 'Powers';
         const isPlus = Math.random() > 0.4;
+        const easyPairs = [
+          [12, 16], [15, 20], [20, 10], [25, 15], [20, 15], [10, 24]
+        ];
         const sumPairs = [
           [12, 16], [15, 20], [7, 24], [10, 24], [17, 14], [18, 12],
           [19, 11], [13, 16], [14, 15], [21, 12], [22, 11], [15, 17],
@@ -2229,34 +2251,43 @@
           [21, 14], [23, 17], [28, 12], [30, 16], [29, 21], [20, 16],
           [25, 16], [24, 15], [26, 14], [28, 18]
         ];
-        const pair = pickRandom(isPlus ? sumPairs : diffPairs);
+        const pair = configDifficulty === 'easy' 
+          ? pickRandom(easyPairs) 
+          : pickRandom(isPlus ? sumPairs : diffPairs);
         const a = pair[0], b = pair[1];
         const aSq = a * a, bSq = b * b;
-        const ans = isPlus ? aSq + bSq : aSq - bSq;
-        const expr = `${a}² ${isPlus ? '+' : '-'} ${b}²`;
+        const actualPlus = configDifficulty === 'easy' ? (a === 25 || a === 20 ? Math.random() > 0.5 : true) : isPlus;
+        const ans = actualPlus ? aSq + bSq : aSq - bSq;
+        const expr = `${a}² ${actualPlus ? '+' : '-'} ${b}²`;
         const targetSec = computeDynamicIdealTime([{ type: 'sq', val: a }, { type: 'sq', val: b }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `dualsq_${a}_${b}`,
-          signature: `dualsq_${a}_${b}_${isPlus ? 'add' : 'sub'}`,
+          signature: `dualsq_${a}_${b}_${actualPlus ? 'add' : 'sub'}`,
           id, category, expr, ans, targetSec,
-          hint: `Evaluate both squares: ${a}² = ${aSq} and ${b}² = ${bSq} ➔ ${aSq} ${isPlus ? '+' : '-'} ${bSq} = ${ans}`,
-          shortcut: `Step 1: ${a}² = ${aSq} | ${b}² = ${bSq} ➔ Step 2: ${aSq} ${isPlus ? '+' : '-'} ${bSq} = ${ans}`
+          hint: `Evaluate both squares: ${a}² = ${aSq} and ${b}² = ${bSq} ➔ ${aSq} ${actualPlus ? '+' : '-'} ${bSq} = ${ans}`,
+          shortcut: `Step 1: ${a}² = ${aSq} | ${b}² = ${bSq} ➔ Step 2: ${aSq} ${actualPlus ? '+' : '-'} ${bSq} = ${ans}`
         };
       },
 
       // 10. Consecutive Square Midpoints ((m-d)(m+d) = m² - d²)
       consecutiveSquareProduct: (id) => {
         const category = 'Powers';
-        const midList = [
+        const easyMidList = [
+          { m: 15, d: 1 }, { m: 20, d: 1 }, { m: 25, d: 1 }, { m: 30, d: 1 }
+        ];
+        const normalMidList = [
           { m: 20, d: 1 }, { m: 20, d: 2 },
           { m: 25, d: 1 }, { m: 25, d: 2 },
           { m: 30, d: 1 }, { m: 30, d: 2 },
           { m: 15, d: 1 }, { m: 15, d: 2 },
-          { m: 35, d: 1 },
-          { m: 40, d: 1 }, { m: 40, d: 2 },
-          { m: 50, d: 1 }, { m: 50, d: 2 }
+          { m: 35, d: 1 }, { m: 40, d: 1 }
         ];
-        const item = pickRandom(midList);
+        const hardMidList = [
+          { m: 25, d: 2 }, { m: 30, d: 2 }, { m: 35, d: 2 },
+          { m: 40, d: 2 }, { m: 50, d: 1 }, { m: 50, d: 2 }, { m: 60, d: 2 }
+        ];
+        const pool = configDifficulty === 'easy' ? easyMidList : (configDifficulty === 'hard' ? hardMidList : normalMidList);
+        const item = pickRandom(pool);
         const p1 = item.m - item.d;
         const p2 = item.m + item.d;
         const mSq = item.m * item.m;
@@ -2276,7 +2307,9 @@
       // 11. Chained Radical Arithmetic (√A ± √B)
       chainedRoots: (id) => {
         const category = 'Roots & Decimals';
-        const roots = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+        const roots = configDifficulty === 'easy' 
+          ? [10, 12, 14, 15, 16, 20] 
+          : (configDifficulty === 'hard' ? [18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] : [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25]);
         let r1 = pickRandom(roots);
         let r2 = pickRandom(roots);
         while (r2 === r1) r2 = pickRandom(roots);
@@ -2330,13 +2363,36 @@
       // 1. Clustered Authentic Percentages (Heavily weighted around 50%)
       clusteredPercentage: (id) => {
         const category = 'Fractions & %';
-        const isTier1 = Math.random() < (configDifficulty === 'hard' ? 0.60 : 0.85);
-        const f = isTier1 ? pickRandom(TIER1_FRACS) : pickRandom(ALL_FRAC_DATA);
-        const multipliers = [2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 15, 16, 18, 20, 24];
-        const multChoice = pickRandom(multipliers);
-        const base = f.denom * multChoice * 10;
+        let f, base;
+        if (configDifficulty === 'easy') {
+          const easyFracs = [
+            { p: '50%', label: '1/2', denom: 2, mult: 1 },
+            { p: '25%', label: '1/4', denom: 4, mult: 1 },
+            { p: '75%', label: '3/4', denom: 4, mult: 3 },
+            { p: '20%', label: '1/5', denom: 5, mult: 1 },
+            { p: '40%', label: '2/5', denom: 5, mult: 2 },
+            { p: '60%', label: '3/5', denom: 5, mult: 3 },
+            { p: '80%', label: '4/5', denom: 5, mult: 4 },
+            { p: '12.5%', label: '1/8', denom: 8, mult: 1 },
+            { p: '37.5%', label: '3/8', denom: 8, mult: 3 },
+            { p: '62.5%', label: '5/8', denom: 8, mult: 5 },
+            { p: '10%', label: '1/10', denom: 10, mult: 1 },
+            { p: '30%', label: '3/10', denom: 10, mult: 3 },
+            { p: '70%', label: '7/10', denom: 10, mult: 7 }
+          ];
+          f = pickRandom(easyFracs);
+          const multChoice = pickRandom([2, 3, 4, 5, 6, 8, 10]);
+          base = f.denom * multChoice * 10;
+        } else {
+          const isTier1 = Math.random() < (configDifficulty === 'hard' ? 0.60 : 0.85);
+          f = isTier1 ? pickRandom(TIER1_FRACS) : pickRandom(ALL_FRAC_DATA);
+          const multipliers = [2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 15, 16, 18, 20];
+          const multChoice = pickRandom(multipliers);
+          base = f.denom * multChoice * 10;
+        }
+
         const fracTerm = Math.round((base / f.denom) * f.mult);
-        const isPure = Math.random() < 0.35;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.35;
 
         if (isPure) {
           const ans = fracTerm;
@@ -2351,7 +2407,9 @@
           };
         }
 
-        const offset = randInt(35, 190);
+        const offset = configDifficulty === 'easy' 
+          ? pickRandom([10, 20, 25, 50, 100]) 
+          : randInt(25, configDifficulty === 'hard' ? 220 : 150);
         const isPlus = Math.random() > 0.4;
         const ans = isPlus ? fracTerm + offset : Math.abs(fracTerm - offset);
         const expr = isPlus ? `(${f.p} of ${base}) + ${offset}` : (fracTerm >= offset ? `(${f.p} of ${base}) - ${offset}` : `${offset} - (${f.p} of ${base})`);
@@ -2368,12 +2426,35 @@
       // 2. Percentage Reversals (A% of B = B% of A)
       percentageReversal: (id) => {
         const category = 'Fractions & %';
-        const primaryBases = [250, 750, 125, 375];
-        const secondaryBases = [625, 450, 25, 75];
-        const friendlyBase = configDifficulty === 'hard' ? pickRandom([...primaryBases, ...secondaryBases]) : pickRandom(primaryBases);
-        const otherNum = pickRandom([16, 24, 32, 36, 44, 48, 56, 64, 72, 84, 96, 128, 144]);
+        let friendlyBase, otherNum;
+        if (configDifficulty === 'easy') {
+          friendlyBase = pickRandom([250, 500]);
+          otherNum = pickRandom([12, 16, 24, 28, 32, 36, 40, 44, 48, 64]);
+        } else if (configDifficulty === 'normal') {
+          friendlyBase = pickRandom([250, 750, 125, 375]);
+          otherNum = pickRandom([16, 24, 32, 36, 44, 48, 56, 64, 72, 84, 96]);
+        } else {
+          friendlyBase = pickRandom([625, 450, 375, 875, 125, 750]);
+          otherNum = pickRandom([16, 24, 32, 36, 44, 48, 56, 64, 72, 84, 96, 128, 144]);
+        }
+
         const fracTerm = Math.round((otherNum * friendlyBase) / 100);
-        const offset = randInt(25, 160);
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.60 : Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = fracTerm;
+          const expr = `${otherNum}% of ${friendlyBase}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: 8, mult: 3 }]);
+          return {
+            family: `revpct_${friendlyBase}`,
+            signature: `revpct_${otherNum}_${friendlyBase}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Reversal Law: ${otherNum}% of ${friendlyBase} = ${friendlyBase}% of ${otherNum}`,
+            shortcut: `Step 1: ${otherNum}% of ${friendlyBase} = ${friendlyBase}% of ${otherNum} = ${fracTerm}`
+          };
+        }
+
+        const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(25, configDifficulty === 'hard' ? 200 : 150);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? fracTerm + offset : Math.abs(fracTerm - offset);
         const expr = isPlus ? `(${otherNum}% of ${friendlyBase}) + ${offset}` : (fracTerm >= offset ? `(${otherNum}% of ${friendlyBase}) - ${offset}` : `${offset} - (${otherNum}% of ${friendlyBase})`);
@@ -2416,8 +2497,15 @@
       // 4. Percentage Growth & Multiplier Indexing (e.g. 14.28% increase on 840, 16.67% decrease on 720)
       percentageGrowthIndexing: (id) => {
         const category = 'Fractions & %';
-        const f = pickRandom(TIER1_FRACS);
-        const m = pickRandom([4, 6, 8, 10, 12, 14, 15, 16, 18, 20, 24, 30]);
+        const normalFracs = [
+          { p: '25%', label: '1/4', denom: 4, mult: 1 },
+          { p: '20%', label: '1/5', denom: 5, mult: 1 },
+          { p: '50%', label: '1/2', denom: 2, mult: 1 },
+          { p: '10%', label: '1/10', denom: 10, mult: 1 },
+          { p: '33.33%', label: '1/3', denom: 3, mult: 1 }
+        ];
+        const f = configDifficulty === 'hard' ? pickRandom(TIER1_FRACS) : pickRandom(normalFracs);
+        const m = pickRandom([4, 6, 8, 10, 12, 14, 15, 16, 18, 20]);
         const base = f.denom * m * (f.denom <= 7 ? 10 : 1);
         const changeVal = Math.round((base / f.denom) * f.mult);
         const isIncrease = Math.random() > 0.5;
@@ -2438,10 +2526,25 @@
         const category = 'Fractions & %';
         const isFiveEighteenth = Math.random() > 0.5;
         if (isFiveEighteenth) {
-          const k = pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40, 45, 50, 60] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25, 30]);
-          const base = 18 * k * (k < 10 ? 10 : 1);
+          const k = configDifficulty === 'easy' 
+            ? pickRandom([2, 3, 4, 5, 6, 8, 10]) 
+            : pickRandom(configDifficulty === 'hard' ? [8, 12, 14, 15, 16, 18, 20, 24, 25, 30, 35, 40, 45, 50, 60] : [6, 8, 10, 12, 14, 15, 16, 18, 20, 25, 30]);
+          const base = 18 * k;
           const term = Math.round((base / 18) * 5);
-          const offset = randInt(35, 220);
+
+          if (configDifficulty === 'easy') {
+            const expr = `5/18 × ${base}`;
+            const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: 18, mult: 5 }]);
+            return {
+              family: `c518_${k}`,
+              signature: `c518_${base}_pure`,
+              id, category, expr, ans: term, targetSec,
+              hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${base / 18} = ${term}`,
+              shortcut: `5/18 × ${base} = 5 × ${base / 18} = ${term}`
+            };
+          }
+
+          const offset = randInt(25, configDifficulty === 'hard' ? 220 : 140);
           const isPlus = Math.random() > 0.45;
           const ans = isPlus ? term + offset : Math.abs(term - offset);
           const expr = isPlus ? `(5/18 of ${base}) + ${offset}` : (term >= offset ? `(5/18 of ${base}) - ${offset}` : `${offset} - (5/18 of ${base})`);
@@ -2454,10 +2557,25 @@
             shortcut: `Step 1: 5/18 × ${base} = 5 × ${base / 18} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         } else {
-          const k = pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55, 65, 75] : [8, 10, 12, 14, 16, 18, 20, 24, 30, 35, 40]);
-          const base = 5 * k * (k < 10 ? 10 : 1);
+          const k = configDifficulty === 'easy'
+            ? pickRandom([2, 4, 6, 8, 10])
+            : pickRandom(configDifficulty === 'hard' ? [12, 14, 16, 18, 22, 24, 28, 32, 36, 45, 55, 65, 75] : [8, 10, 12, 14, 16, 18, 20, 24, 30, 35, 40]);
+          const base = 5 * k;
           const term = Math.round((base / 5) * 18);
-          const offset = randInt(35, 240);
+
+          if (configDifficulty === 'easy') {
+            const expr = `18/5 × ${base}`;
+            const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: 5, mult: 18 }]);
+            return {
+              family: `c185_${k}`,
+              signature: `c185_${base}_pure`,
+              id, category, expr, ans: term, targetSec,
+              hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${base / 5} = ${term}`,
+              shortcut: `18/5 × ${base} = 18 × ${base / 5} = ${term}`
+            };
+          }
+
+          const offset = randInt(25, configDifficulty === 'hard' ? 240 : 150);
           const isPlus = Math.random() > 0.45;
           const ans = isPlus ? term + offset : Math.abs(term - offset);
           const expr = isPlus ? `(18/5 of ${base}) + ${offset}` : (term >= offset ? `(18/5 of ${base}) - ${offset}` : `${offset} - (18/5 of ${base})`);
@@ -2475,11 +2593,33 @@
       // 6. Decimal Multipliers
       decimalMultipliers: (id) => {
         const category = 'Roots & Decimals';
-        const choice = pickRandom(DECIMAL_MULTIPLIERS);
-        const k = randInt(6, 28);
+        const easyDecimals = [
+          { name: '0.5', frac: '1/2', denom: 2, num: 1 },
+          { name: '0.25', frac: '1/4', denom: 4, num: 1 },
+          { name: '0.75', frac: '3/4', denom: 4, num: 3 },
+          { name: '1.5', frac: '3/2', denom: 2, num: 3 },
+          { name: '2.5', frac: '5/2', denom: 2, num: 5 }
+        ];
+        const choice = configDifficulty === 'easy' ? pickRandom(easyDecimals) : pickRandom(DECIMAL_MULTIPLIERS);
+        const k = configDifficulty === 'easy' ? randInt(4, 16) : randInt(6, 28);
         const base = choice.denom * k * (choice.denom <= 4 ? 10 : 1);
         const prodVal = Math.round((base / choice.denom) * choice.num);
-        const offset = randInt(25, 180);
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.60 : Math.random() < 0.35;
+
+        if (isPure) {
+          const ans = prodVal;
+          const expr = `${choice.name} × ${base}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'mult_dec', isDecimal: true }]);
+          return {
+            family: `dec_${choice.name}`,
+            signature: `dec_${choice.name}_${base}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Convert decimal to fraction: ${choice.name} = ${choice.frac} ➔ (${choice.frac}) × ${base} = ${prodVal}`,
+            shortcut: `Step 1: ${choice.name} = ${choice.frac} ➔ (${choice.frac}) × ${base} = ${ans}`
+          };
+        }
+
+        const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(20, configDifficulty === 'hard' ? 180 : 130);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? prodVal + offset : Math.abs(prodVal - offset);
         const expr = isPlus ? `(${choice.name} × ${base}) + ${offset}` : (prodVal >= offset ? `(${choice.name} × ${base}) - ${offset}` : `${offset} - (${choice.name} × ${base})`);
@@ -2579,25 +2719,55 @@
       // 1. Break-Apart / Mental Distributive Multiplication (×25, ×12.5, ×50, ×75, ×99, ×101)
       breakApartMultiplication: (id) => {
         const category = 'Tables & Products';
-        const trickType = pickRandom(['x25', 'x12_5', 'x50', 'x75', 'x99', 'x101']);
+        const trickType = configDifficulty === 'easy'
+          ? pickRandom(['x25', 'x50'])
+          : pickRandom(['x25', 'x12_5', 'x50', 'x75', 'x99', 'x101']);
         let expr, ans, hint, shortcut, family;
 
         if (trickType === 'x25') {
-          const k = randInt(12, 48);
+          const k = configDifficulty === 'easy' ? pickRandom([3, 4, 5, 6, 8, 10, 12, 15]) : randInt(12, 48);
           const num = k * 4;
           const prod = num * 25;
-          const offset = randInt(40, 280);
-          const isPlus = Math.random() > 0.45;
-          ans = isPlus ? prod + offset : prod - offset;
-          expr = `(${num} × 25) ${isPlus ? '+' : '-'} ${offset}`;
-          family = `break_x25_${num}`;
-          hint = `× 25 shortcut: Divide by 4 and append 00 (or multiply by 100/4)`;
-          shortcut = `Step 1: ${num} × 25 = (${num} ÷ 4) × 100 = ${k} × 100 = ${prod} ➔ Step 2: ${prod} ${isPlus ? '+' : '-'} ${offset} = ${ans}`;
+          const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : false;
+          if (isPure) {
+            ans = prod;
+            expr = `${num} × 25`;
+            family = `break_x25_${num}`;
+            hint = `× 25 shortcut: (${num} ÷ 4) × 100 = ${k} × 100 = ${prod}`;
+            shortcut = `${num} × 25 = (${num} ÷ 4) × 100 = ${prod}`;
+          } else {
+            const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 280 : 160);
+            const isPlus = Math.random() > 0.45;
+            ans = isPlus ? prod + offset : prod - offset;
+            expr = `(${num} × 25) ${isPlus ? '+' : '-'} ${offset}`;
+            family = `break_x25_${num}`;
+            hint = `× 25 shortcut: Divide by 4 and multiply by 100`;
+            shortcut = `Step 1: ${num} × 25 = (${num} ÷ 4) × 100 = ${k} × 100 = ${prod} ➔ Step 2: ${prod} ${isPlus ? '+' : '-'} ${offset} = ${ans}`;
+          }
+        } else if (trickType === 'x50') {
+          const num = configDifficulty === 'easy' ? pickRandom([12, 14, 16, 18, 22, 24, 28, 32]) : randInt(18, 64);
+          const prod = (num / 2) * 100;
+          const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : false;
+          if (isPure) {
+            ans = prod;
+            expr = `${num} × 50`;
+            family = `break_x50_${num}`;
+            hint = `× 50 shortcut: (${num} ÷ 2) × 100 = ${num / 2} × 100 = ${prod}`;
+            shortcut = `${num} × 50 = ${prod}`;
+          } else {
+            const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 260 : 150);
+            const isPlus = Math.random() > 0.45;
+            ans = isPlus ? prod + offset : prod - offset;
+            expr = `(${num} × 50) ${isPlus ? '+' : '-'} ${offset}`;
+            family = `break_x50_${num}`;
+            hint = `× 50 shortcut: (${num} ÷ 2) × 100 = ${prod}`;
+            shortcut = `Step 1: ${num} × 50 = ${prod} ➔ Step 2: ${ans}`;
+          }
         } else if (trickType === 'x12_5') {
           const k = randInt(6, 24);
           const num = k * 8;
           const prod = num * 12.5;
-          const offset = randInt(35, 220);
+          const offset = randInt(25, configDifficulty === 'hard' ? 240 : 150);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${num} × 12.5) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2608,7 +2778,7 @@
           const k = randInt(6, 22);
           const num = k * 4;
           const prod = num * 75;
-          const offset = randInt(45, 320);
+          const offset = randInt(25, configDifficulty === 'hard' ? 260 : 160);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${num} × 75) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2618,7 +2788,7 @@
         } else if (trickType === 'x99') {
           const num = randInt(24, 88);
           const prod = num * 99;
-          const offset = randInt(35, 240);
+          const offset = randInt(25, configDifficulty === 'hard' ? 240 : 150);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${num} × 99) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2628,7 +2798,7 @@
         } else {
           const num = randInt(24, 76);
           const prod = num * 101;
-          const offset = randInt(35, 240);
+          const offset = randInt(25, configDifficulty === 'hard' ? 240 : 150);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${num} × 101) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2648,7 +2818,10 @@
       // 2. Near-Base & Same Tens/Sum to 10 Multiplication
       nearBaseMultiplication: (id) => {
         const category = 'Tables & Products';
-        const sub = pickRandom(['base100_above', 'base100_below', 'same_tens_10']);
+        const subList = configDifficulty === 'hard' 
+          ? ['base100_above', 'base100_below', 'same_tens_10', 'base200'] 
+          : ['base100_above', 'base100_below', 'same_tens_10'];
+        const sub = pickRandom(subList);
         let expr, ans, hint, shortcut, family;
 
         if (sub === 'base100_above') {
@@ -2657,7 +2830,7 @@
           const a = 100 + d1;
           const b = 100 + d2;
           const prod = (100 + d1 + d2) * 100 + (d1 * d2);
-          const offset = randInt(40, 250);
+          const offset = randInt(25, configDifficulty === 'hard' ? 250 : 160);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${a} × ${b}) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2670,7 +2843,7 @@
           const a = 100 - d1;
           const b = 100 - d2;
           const prod = (100 - d1 - d2) * 100 + (d1 * d2);
-          const offset = randInt(40, 250);
+          const offset = randInt(25, configDifficulty === 'hard' ? 250 : 160);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${a} × ${b}) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2683,12 +2856,12 @@
           const a = 200 + d1;
           const b = 200 + d2;
           const prod = (200 + d1 + d2) * 200 + (d1 * d2);
-          const offset = randInt(40, 260);
+          const offset = randInt(35, 260);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${a} × ${b}) ${isPlus ? '+' : '-'} ${offset}`;
           family = `nb_200_${a}_${b}`;
-          hint = `Vedic base-200: (200 + ${d1} + ${d2}) × 200 + (${d1} × ${d2}) = ${200 + d1 + d2} × 200 + ${d1 * d2} = ${prod}`;
+          hint = `Vedic base-200: (200 + ${d1} + ${d2}) × 200 + (${d1} × ${d2}) = ${prod}`;
           shortcut = `Step 1: ${a} × ${b} = (${200+d1+d2} × 200) + (${d1*d2}) = ${prod} ➔ Step 2: ${prod} ${isPlus ? '+' : '-'} ${offset} = ${ans}`;
         } else {
           const tens = randInt(2, 9);
@@ -2697,7 +2870,7 @@
           const a = tens * 10 + u1;
           const b = tens * 10 + u2;
           const prod = (tens * (tens + 1)) * 100 + (u1 * u2);
-          const offset = randInt(35, 220);
+          const offset = randInt(25, configDifficulty === 'hard' ? 220 : 140);
           const isPlus = Math.random() > 0.45;
           ans = isPlus ? prod + offset : prod - offset;
           expr = `(${a} × ${b}) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2714,7 +2887,7 @@
         };
       },
 
-      // 3. Multi-Step Dual Product Synthesis ((A × B) ± (C × D))
+      // 3. Multi-Step Dual Product Synthesis ((A × B) ± (C × D)) - Strictly Hard
       dualProductComposite: (id) => {
         const category = 'Tables & Products';
         const t1 = pickRandom([13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25]);
@@ -2742,13 +2915,15 @@
       // 3. Twin Products / Midpoint Splitting ((x-d)(x+d) = x² - d²)
       twinProducts: (id) => {
         const category = 'Tables & Products';
-        const highYieldMids = [20, 25, 30, 35, 40, 50, 60];
+        const highYieldMids = configDifficulty === 'hard' 
+          ? [25, 30, 35, 40, 50, 60] 
+          : [20, 25, 30, 35, 40];
         const mid = pickRandom(highYieldMids);
-        const d = pickRandom([1, 2, 3, 4, 5]);
+        const d = configDifficulty === 'hard' ? pickRandom([1, 2, 3, 4, 5]) : pickRandom([1, 2, 3]);
         const p1 = mid - d;
         const p2 = mid + d;
         const prodVal = (mid * mid) - (d * d);
-        const offset = randInt(35, 240);
+        const offset = randInt(25, configDifficulty === 'hard' ? 240 : 150);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? prodVal + offset : prodVal - offset;
         const expr = `(${p1} × ${p2}) ${isPlus ? '+' : '-'} ${offset}`;
@@ -2765,32 +2940,63 @@
       // 4. Mental Division by Primes (Heavily weighted on 3, 7, 11, 13, 17, 19)
       mentalDivisionByPrimes: (id) => {
         const category = 'Tables & Products';
-        const primeDivisor = pickWeighted([3, 5, 7, 11, 13, 17, 19, 23, 29], [22, 12, 22, 14, 12, 8, 5, 3, 2]);
-        let quotient;
-        if (primeDivisor === 3) quotient = randInt(45, 290);
-        else if (primeDivisor === 5) quotient = randInt(35, 260);
-        else if (primeDivisor === 7) quotient = randInt(25, 190);
-        else if (primeDivisor === 11) quotient = randInt(18, 110);
-        else if (primeDivisor === 13) quotient = randInt(14, 85);
-        else if (primeDivisor === 17) quotient = randInt(12, 65);
-        else if (primeDivisor === 19) quotient = randInt(12, 55);
-        else quotient = randInt(8, 40);
+        let primeDivisor, quotient;
+
+        if (configDifficulty === 'easy') {
+          // Strictly small primes and clean 2-digit friendly quotients
+          primeDivisor = pickWeighted([3, 5, 7, 11], [30, 25, 30, 15]);
+          if (primeDivisor === 3) quotient = randInt(12, 35);
+          else if (primeDivisor === 5) quotient = randInt(11, 30);
+          else if (primeDivisor === 7) quotient = randInt(11, 24);
+          else quotient = randInt(4, 15);
+        } else if (configDifficulty === 'normal') {
+          primeDivisor = pickWeighted([3, 5, 7, 11, 13, 17], [22, 14, 24, 16, 14, 10]);
+          if (primeDivisor === 3) quotient = randInt(25, 80);
+          else if (primeDivisor === 5) quotient = randInt(20, 70);
+          else if (primeDivisor === 7) quotient = randInt(14, 45);
+          else if (primeDivisor === 11) quotient = randInt(12, 35);
+          else if (primeDivisor === 13) quotient = randInt(11, 25);
+          else quotient = randInt(11, 20);
+        } else {
+          primeDivisor = pickWeighted([7, 11, 13, 17, 19, 23, 29], [10, 15, 15, 20, 15, 15, 10]);
+          if (primeDivisor === 7) quotient = randInt(45, 190);
+          else if (primeDivisor === 11) quotient = randInt(35, 110);
+          else if (primeDivisor === 13) quotient = randInt(25, 85);
+          else if (primeDivisor === 17) quotient = randInt(15, 65);
+          else if (primeDivisor === 19) quotient = randInt(15, 55);
+          else quotient = randInt(12, 40);
+        }
 
         const dividend = primeDivisor * quotient;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : false;
+
+        if (isPure) {
+          const ans = quotient;
+          const expr = `${dividend} ÷ ${primeDivisor}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'table', t: primeDivisor, m: 8 }]);
+          return {
+            family: `prime_op_${primeDivisor}`,
+            signature: `divprime_${dividend}_${primeDivisor}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Chunking prime division: ${dividend} ÷ ${primeDivisor} = ${quotient}`,
+            shortcut: `Instant: ${dividend} ÷ ${primeDivisor} = ${quotient}`
+          };
+        }
+
         const template = randInt(1, 3);
         let expr, ans, offset;
 
         if (template === 1) { // (dividend ÷ prime) + offset
-          offset = randInt(30, 220);
+          offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(25, configDifficulty === 'hard' ? 220 : 140);
           ans = quotient + offset;
           expr = `(${dividend} ÷ ${primeDivisor}) + ${offset}`;
         } else if (template === 2) { // (dividend ÷ prime) - offset or offset - (dividend ÷ prime)
-          offset = randInt(25, Math.max(quotient - 5, 180));
+          offset = configDifficulty === 'easy' ? pickRandom([5, 10, 15].filter(v => v < quotient)) : randInt(20, Math.max(quotient - 5, 140));
           ans = quotient >= offset ? quotient - offset : offset - quotient;
           expr = quotient >= offset ? `(${dividend} ÷ ${primeDivisor}) - ${offset}` : `${offset} - (${dividend} ÷ ${primeDivisor})`;
         } else { // (dividend ÷ prime) + (table × mult)
-          const t = pickRandom([12, 14, 15, 16, 18]);
-          const m = randInt(3, 7);
+          const t = configDifficulty === 'easy' ? pickRandom([12, 14, 15]) : pickRandom([12, 14, 15, 16, 18]);
+          const m = randInt(2, 5);
           const tVal = t * m;
           ans = quotient + tVal;
           expr = `(${dividend} ÷ ${primeDivisor}) + (${t} × ${m})`;
@@ -2809,23 +3015,53 @@
       // 5. Mental Prime Multiplication (Primes 7, 11, 13, 17, 19, 23, 29 with Multi-Term Coupling)
       primeMultiplication: (id) => {
         const category = 'Tables & Products';
-        const primeMultiplier = pickWeighted([7, 11, 13, 17, 19, 23, 29], [22, 20, 18, 16, 12, 7, 5]);
-        const m = randInt(4, 16);
+        let primeMultiplier, m;
+
+        if (configDifficulty === 'easy') {
+          primeMultiplier = pickRandom([3, 5, 7, 11, 13, 17]);
+          m = randInt(3, 8);
+        } else if (configDifficulty === 'normal') {
+          primeMultiplier = pickWeighted([7, 11, 13, 17, 19], [25, 25, 20, 20, 10]);
+          m = randInt(4, 12);
+        } else {
+          primeMultiplier = pickWeighted([13, 17, 19, 23, 29], [20, 25, 20, 20, 15]);
+          m = randInt(6, 18);
+        }
+
         const prod = primeMultiplier * m;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : false;
+
+        if (isPure) {
+          const ans = prod;
+          const expr = `${primeMultiplier} × ${m}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'table', t: primeMultiplier, m }]);
+          return {
+            family: `prime_op_${primeMultiplier}`,
+            signature: `multprime_${primeMultiplier}_${m}_pure`,
+            id, category, expr, ans, targetSec,
+            hint: `Prime product: ${primeMultiplier} × ${m} = ${prod}`,
+            shortcut: `Recall: ${primeMultiplier} × ${m} = ${prod}`
+          };
+        }
+
         const template = randInt(1, 3);
         let expr, ans, offset;
 
-        if (template === 1) { // (prime × m) + offset
-          offset = randInt(35, 240);
+        if (template === 1) {
+          offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(25, configDifficulty === 'hard' ? 240 : 150);
           ans = prod + offset;
           expr = `(${primeMultiplier} × ${m}) + ${offset}`;
-        } else if (template === 2) { // (prime × m) - offset
-          offset = randInt(30, Math.min(prod - 10, 220));
+        } else if (template === 2) {
+          const easyOffsets = [10, 20, 25].filter(v => v < prod);
+          offset = configDifficulty === 'easy'
+            ? (easyOffsets.length > 0 ? pickRandom(easyOffsets) : randInt(1, Math.max(1, prod - 2)))
+            : (prod > 30 ? randInt(10, Math.min(prod - 10, configDifficulty === 'hard' ? 160 : 100)) : randInt(1, Math.max(1, prod - 4)));
+          if (offset >= prod) offset = Math.max(1, prod - 2);
           ans = prod - offset;
           expr = `(${primeMultiplier} × ${m}) - ${offset}`;
-        } else { // (prime × m) + (other_table × k)
-          const t = pickRandom([12, 14, 15, 16, 18]);
-          const k = randInt(3, 7);
+        } else {
+          const t = configDifficulty === 'easy' ? pickRandom([12, 14, 15]) : pickRandom([12, 14, 15, 16, 18]);
+          const k = randInt(2, 5);
           const tVal = t * k;
           ans = prod + tVal;
           expr = `(${primeMultiplier} × ${m}) + (${t} × ${k})`;
@@ -2841,34 +3077,56 @@
         };
       },
 
-      // 5. CAT Special Numbers (1001, 111, 10001, 10101, 999)
       catSpecialNumbers: (id) => {
         const category = 'Tables & Products';
         const item = pickRandom(CAT_SPECIAL_NUMBERS);
-        const offset = randInt(20, 140);
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.70 : Math.random() < 0.45;
+
+        if (isPure) {
+          const ans = item.quotient;
+          const expr = `${item.num} ÷ ${item.divisor}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'div', a: item.num, b: item.divisor }]);
+          return {
+            family: `cat_special_${item.num}`,
+            signature: `special_${item.num}_${item.divisor}_pure`,
+            id, category: 'Tables & Special Numbers', expr, ans, targetSec,
+            hint: `Special Number Property: ${item.note}`,
+            shortcut: `Factorization: ${item.factors} ➔ ${item.num} ÷ ${item.divisor} = ${item.quotient}`
+          };
+        }
+
+        const offset = configDifficulty === 'easy' ? pickRandom([5, 10, 15, 20]) : randInt(15, configDifficulty === 'hard' ? 140 : 80);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? item.quotient + offset : Math.abs(item.quotient - offset);
-        const expr = isPlus ? `(${item.num} ÷ ${item.divisor}) + ${offset}` : (item.quotient >= offset ? `(${item.num} ÷ ${item.divisor}) - ${offset}` : `${offset} - (${item.num} ÷ ${item.divisor})`);
-        const targetSec = computeDynamicIdealTime([{ type: 'table', t: 19, m: 8 }, { type: 'add_sub', terms: 2 }]);
+        const expr = `(${item.num} ÷ ${item.divisor}) ${isPlus ? '+' : '-'} ${offset}`;
+        const targetSec = computeDynamicIdealTime([{ type: 'div', a: item.num, b: item.divisor }, { type: 'add_sub', terms: 2 }]);
         return {
-          family: `spec_${item.num}`,
-          signature: `spec_${item.num}_${item.divisor}_${expr}`,
+          family: `cat_special_${item.num}`,
+          signature: `special_${item.num}_${item.divisor}_${expr}`,
           id, category: 'Tables & Special Numbers', expr, ans, targetSec,
-          hint: `Prime factorization: ${item.note}`,
-          shortcut: `Step 1: ${item.note} ➔ ${item.num} ÷ ${item.divisor} = ${item.quotient} ➔ Step 2: ${item.quotient} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
+          hint: `Special Number Property: ${item.note}`,
+          shortcut: `Step 1: ${item.num} ÷ ${item.divisor} = ${item.quotient} ➔ Step 2: ${item.quotient} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
         };
       },
 
-      // 6. High-Yield Tables (14-29)
       highYieldTables: (id) => {
         const category = 'Tables & Products';
-        const primaryTables = [14, 16, 17, 18, 19, 23, 24, 26, 28, 29];
-        const extendedTables = [13, 21, 22, 27];
-        const tPool = configDifficulty === 'hard' ? [...primaryTables, ...extendedTables] : primaryTables;
+        let tPool, m;
+
+        if (configDifficulty === 'easy') {
+          tPool = [12, 13, 14, 15, 16];
+          m = randInt(2, 8);
+        } else if (configDifficulty === 'normal') {
+          tPool = [14, 15, 16, 17, 18, 19, 21, 22, 23, 24];
+          m = randInt(4, 9);
+        } else {
+          tPool = [21, 22, 23, 24, 26, 27, 28, 29];
+          m = randInt(5, 9);
+        }
+
         const t = pickRandom(tPool);
-        const m = randInt(4, 9);
         const tableTerm = t * m;
-        const isPure = Math.random() < 0.4;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.4;
 
         if (isPure) {
           const ans = tableTerm;
@@ -2883,10 +3141,21 @@
           };
         }
 
-        const offset = randInt(25, Math.min(tableTerm - 10, 160));
-        const isPlus = Math.random() > 0.5;
-        const ans = isPlus ? tableTerm + offset : tableTerm - offset;
-        const expr = `(${t} × ${m}) ${isPlus ? '+' : '-'} ${offset}`;
+        const isPlus = Math.random() > 0.45;
+        let offset, ans, expr;
+        if (isPlus) {
+          offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(15, configDifficulty === 'hard' ? 220 : 120);
+          ans = tableTerm + offset;
+          expr = `(${t} × ${m}) + ${offset}`;
+        } else {
+          const easyOffsets = [10, 20, 25, 50].filter(v => v < tableTerm);
+          offset = configDifficulty === 'easy'
+            ? (easyOffsets.length > 0 ? pickRandom(easyOffsets) : randInt(1, Math.max(1, tableTerm - 2)))
+            : randInt(10, Math.min(Math.max(12, tableTerm - 5), configDifficulty === 'hard' ? 220 : 120));
+          if (offset >= tableTerm) offset = Math.max(1, tableTerm - randInt(2, 6));
+          ans = tableTerm - offset;
+          expr = `(${t} × ${m}) - ${offset}`;
+        }
         const targetSec = computeDynamicIdealTime([{ type: 'table', t, m }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `tbl_${t}`,
@@ -2938,24 +3207,36 @@
       // 8. Double & Halve Strategy (Even × 5-ended number)
       doubleAndHalve: (id) => {
         const category = 'Tables & Products';
-        const pairs = [
+        const easyPairs = [
+          { even: 14, five: 15, h: 7, d: 30 },
+          { even: 16, five: 25, h: 8, d: 50 },
+          { even: 12, five: 35, h: 6, d: 70 },
+          { even: 18, five: 25, h: 9, d: 50 },
+          { even: 22, five: 15, h: 11, d: 30 },
+          { even: 14, five: 25, h: 7, d: 50 },
+          { even: 16, five: 15, h: 8, d: 30 }
+        ];
+        const normalPairs = [
           { even: 18, five: 35, h: 9, d: 70 },
           { even: 24, five: 45, h: 12, d: 90 },
           { even: 16, five: 75, h: 8, d: 150 },
           { even: 28, five: 25, h: 14, d: 50 },
           { even: 32, five: 15, h: 16, d: 30 },
           { even: 36, five: 45, h: 18, d: 90 },
+          { even: 26, five: 45, h: 13, d: 90 },
+          { even: 24, five: 35, h: 12, d: 70 }
+        ];
+        const hardPairs = [
           { even: 44, five: 35, h: 22, d: 70 },
           { even: 14, five: 85, h: 7, d: 170 },
-          { even: 26, five: 45, h: 13, d: 90 },
           { even: 22, five: 75, h: 11, d: 150 },
           { even: 48, five: 15, h: 24, d: 30 },
           { even: 16, five: 85, h: 8, d: 170 },
           { even: 34, five: 25, h: 17, d: 50 },
-          { even: 24, five: 35, h: 12, d: 70 },
           { even: 42, five: 45, h: 21, d: 90 }
         ];
-        const item = pickRandom(pairs);
+        const pool = configDifficulty === 'easy' ? easyPairs : (configDifficulty === 'hard' ? hardPairs : normalPairs);
+        const item = pickRandom(pool);
         const ans = item.even * item.five;
         const expr = `${item.even} × ${item.five}`;
         const targetSec = computeDynamicIdealTime([{ type: 'table', t: item.h, m: 7 }]);
@@ -3005,17 +3286,33 @@
     const ArchetypesFactorials = {
       factorialRatio: (id) => {
         const category = 'Factorials';
-        const pairs = [
+        const easyPairs = [
+          { n: 5, d: 3, val: 20 },
+          { n: 6, d: 4, val: 30 },
+          { n: 7, d: 5, val: 42 },
+          { n: 8, d: 6, val: 56 },
+          { n: 8, d: 7, val: 8 },
+          { n: 7, d: 6, val: 7 },
+          { n: 6, d: 5, val: 6 }
+        ];
+        const normalPairs = [
           { n: 8, d: 6, val: 56 },
           { n: 7, d: 5, val: 42 },
           { n: 6, d: 4, val: 30 },
           { n: 6, d: 3, val: 120 },
-          { n: 7, d: 4, val: 210 },
           { n: 9, d: 7, val: 72 },
           { n: 5, d: 3, val: 20 }
         ];
-        const pair = pickRandom(pairs);
-        const isPure = Math.random() < 0.35;
+        const hardPairs = [
+          { n: 7, d: 4, val: 210 },
+          { n: 8, d: 5, val: 336 },
+          { n: 9, d: 7, val: 72 },
+          { n: 6, d: 3, val: 120 },
+          { n: 8, d: 6, val: 56 }
+        ];
+        const pool = configDifficulty === 'easy' ? easyPairs : (configDifficulty === 'hard' ? hardPairs : normalPairs);
+        const pair = pickRandom(pool);
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.35;
 
         if (isPure) {
           const ans = pair.val;
@@ -3030,9 +3327,24 @@
           };
         }
 
-        const mult = randInt(2, 6);
+        if (configDifficulty === 'easy') {
+          const offset = pickRandom([10, 20, 25]);
+          const isPlus = Math.random() > 0.5;
+          const ans = isPlus ? pair.val + offset : Math.abs(pair.val - offset);
+          const expr = isPlus ? `(${pair.n}! / ${pair.d}!) + ${offset}` : (pair.val >= offset ? `(${pair.n}! / ${pair.d}!) - ${offset}` : `${offset} - (${pair.n}! / ${pair.d}!)`);
+          const targetSec = computeDynamicIdealTime([{ type: 'fact_ratio', n: pair.n, d: pair.d, mult: 1 }, { type: 'add_sub', terms: 2 }]);
+          return {
+            family: `fact_${pair.n}_${pair.d}`,
+            signature: `fact_${pair.n}_${pair.d}_${expr}`,
+            id, category, expr, ans, targetSec,
+            hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${pair.val}`,
+            shortcut: `Step 1: ${pair.n}! / ${pair.d}! = ${pair.val} ➔ Step 2: ${ans}`
+          };
+        }
+
+        const mult = configDifficulty === 'hard' ? randInt(2, 6) : randInt(2, 4);
         const prod = pair.val * mult;
-        const offset = randInt(30, 220);
+        const offset = randInt(20, configDifficulty === 'hard' ? 220 : 140);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? prod + offset : Math.abs(prod - offset);
         const expr = isPlus ? `(${pair.n}! / ${pair.d}! × ${mult}) + ${offset}` : (prod >= offset ? `(${pair.n}! / ${pair.d}! × ${mult}) - ${offset}` : `${offset} - (${pair.n}! / ${pair.d}! × ${mult})`);
@@ -3048,25 +3360,35 @@
 
       factorialCompound: (id) => {
         const category = 'Factorials';
-        const n = randInt(4, 6);
-        const mult = randInt(2, 7);
+        let n, mult;
+        if (configDifficulty === 'easy') {
+          n = pickRandom([4, 5]);
+          mult = pickRandom([1, 2]);
+        } else if (configDifficulty === 'normal') {
+          n = pickRandom([4, 5, 6]);
+          mult = randInt(2, 4);
+        } else {
+          n = randInt(5, 6);
+          mult = randInt(3, 7);
+        }
+
         const factTerm = factVals[n] * mult;
-        const isPure = Math.random() < 0.35;
+        const isPure = configDifficulty === 'easy' ? Math.random() < 0.65 : Math.random() < 0.35;
 
         if (isPure) {
           const ans = factTerm;
-          const expr = `${n}! × ${mult}`;
+          const expr = mult === 1 ? `${n}!` : `${n}! × ${mult}`;
           const targetSec = computeDynamicIdealTime([{ type: 'fact', n, mult }]);
           return {
             family: `fact_${n}`,
             signature: `fact_${n}_${mult}_pure`,
             id, category, expr, ans, targetSec,
             hint: `Recall: ${n}! = ${factVals[n]}`,
-            shortcut: `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm}`
+            shortcut: mult === 1 ? `Instant Recall: ${n}! = ${ans}` : `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm}`
           };
         }
 
-        const offset = randInt(35, 180);
+        const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 50]) : randInt(25, configDifficulty === 'hard' ? 220 : 150);
         const isPlus = Math.random() > 0.45;
         const ans = isPlus ? factTerm + offset : Math.abs(factTerm - offset);
         const expr = isPlus ? `(${n}! × ${mult}) + ${offset}` : (factTerm >= offset ? `(${n}! × ${mult}) - ${offset}` : `${offset} - (${n}! × ${mult})`);
@@ -3083,17 +3405,26 @@
       // 3. Combinatorics Evaluations (nCr recall and dual arithmetic)
       combinatorics: (id) => {
         const category = 'Factorials';
-        const combList = [
+        const easyCombList = [
           { n: 5, r: 2, val: 10 },
           { n: 5, r: 3, val: 10 },
           { n: 6, r: 2, val: 15 },
           { n: 6, r: 3, val: 20 },
-          { n: 6, r: 4, val: 15 },
+          { n: 7, r: 2, val: 21 },
+          { n: 8, r: 2, val: 28 }
+        ];
+        const normalCombList = [
+          { n: 5, r: 2, val: 10 },
+          { n: 6, r: 2, val: 15 },
+          { n: 6, r: 3, val: 20 },
           { n: 7, r: 2, val: 21 },
           { n: 7, r: 3, val: 35 },
-          { n: 7, r: 4, val: 35 },
-          { n: 7, r: 5, val: 21 },
           { n: 8, r: 2, val: 28 },
+          { n: 8, r: 3, val: 56 },
+          { n: 9, r: 2, val: 36 }
+        ];
+        const hardCombList = [
+          { n: 7, r: 3, val: 35 },
           { n: 8, r: 3, val: 56 },
           { n: 8, r: 4, val: 70 },
           { n: 9, r: 2, val: 36 },
@@ -3102,7 +3433,23 @@
           { n: 10, r: 3, val: 120 }
         ];
 
-        const isDual = Math.random() > 0.45;
+        if (configDifficulty === 'easy') {
+          // Strictly 100% pure recall on Easy
+          const c = pickRandom(easyCombList);
+          const expr = `${c.n}C${c.r}`;
+          const targetSec = computeDynamicIdealTime([{ type: 'comb', n: c.n }]);
+          return {
+            family: `comb_${c.n}_${c.r}`,
+            signature: `comb_${c.n}_${c.r}_pure`,
+            id, category, expr, ans: c.val, targetSec,
+            hint: `Recall: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!) = ${c.val}`,
+            shortcut: `Instant Recall: ${c.n}C${c.r} = ${c.val}`
+          };
+        }
+
+        const isDual = configDifficulty === 'hard' ? Math.random() > 0.4 : Math.random() > 0.5;
+        const combList = configDifficulty === 'hard' ? hardCombList : normalCombList;
+
         if (isDual) {
           let c1 = pickRandom(combList);
           let c2 = pickRandom(combList);
@@ -3136,7 +3483,7 @@
             };
           }
 
-          const offset = randInt(15, 80);
+          const offset = randInt(15, 60);
           const isPlus = Math.random() > 0.45;
           const ans = isPlus ? c.val + offset : Math.abs(c.val - offset);
           const expr = isPlus ? `(${c.n}C${c.r}) + ${offset}` : (c.val >= offset ? `(${c.n}C${c.r}) - ${offset}` : `${offset} - (${c.n}C${c.r})`);
@@ -3185,7 +3532,24 @@
         const category = 'Addition & Subtraction';
         const isPlus = Math.random() > 0.45;
         let t1, t2, ans, expr, hint, shortcut;
-        if (isPlus) {
+
+        if (configDifficulty === 'easy') {
+          if (isPlus) {
+            t1 = pickRandom([24, 25, 32, 35, 40, 42, 45, 50, 52, 55, 60, 64, 65, 70]);
+            t2 = pickRandom([15, 16, 20, 23, 25, 30, 32, 35, 40, 45]);
+            ans = t1 + t2;
+            expr = `${t1} + ${t2}`;
+            hint = `Tens first: ${Math.floor(t1/10)*10} + ${Math.floor(t2/10)*10} = ${(Math.floor(t1/10) + Math.floor(t2/10))*10}, then add units`;
+            shortcut = `${t1} + ${t2} = ${ans}`;
+          } else {
+            t1 = pickRandom([45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]);
+            t2 = pickRandom([15, 20, 25, 30, 35, 40].filter(v => v < t1 - 10));
+            ans = t1 - t2;
+            expr = `${t1} - ${t2}`;
+            hint = `Friendly subtraction: ${t1} - ${t2} = ${ans}`;
+            shortcut = `${t1} - ${t2} = ${ans}`;
+          }
+        } else if (isPlus) {
           t1 = randInt(28, 98);
           t2 = randInt(25, 96);
           ans = t1 + t2;
@@ -3217,16 +3581,28 @@
       // 2. Pure 2-Digit 3-Term Mixed Speed (Mixed + and -)
       twoDigitThreeTerm: (id) => {
         const category = 'Addition & Subtraction';
-        const t1 = randInt(45, 98);
-        const t2 = randInt(24, 88);
-        const isT2Minus = Math.random() < 0.45 && t1 > t2 + 15;
-        const running1 = isT2Minus ? t1 - t2 : t1 + t2;
-        
-        const t3 = randInt(18, 75);
-        const isT3Minus = Math.random() < 0.5 && running1 > t3 + 12;
-        const ans = isT3Minus ? running1 - t3 : running1 + t3;
-        
-        const expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        let t1, t2, t3, isT2Minus, isT3Minus, running1, ans, expr;
+
+        if (configDifficulty === 'easy') {
+          t1 = pickRandom([30, 35, 40, 45, 50, 55, 60, 65, 70]);
+          t2 = pickRandom([15, 20, 25, 30, 35]);
+          isT2Minus = Math.random() < 0.45;
+          running1 = isT2Minus ? t1 - t2 : t1 + t2;
+          t3 = pickRandom([10, 15, 20, 25].filter(v => !isT3Minus || running1 > v + 10));
+          isT3Minus = Math.random() < 0.45 && running1 > t3 + 10;
+          ans = isT3Minus ? running1 - t3 : running1 + t3;
+          expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        } else {
+          t1 = randInt(45, 98);
+          t2 = randInt(24, 88);
+          isT2Minus = Math.random() < 0.45 && t1 > t2 + 15;
+          running1 = isT2Minus ? t1 - t2 : t1 + t2;
+          t3 = randInt(18, 75);
+          isT3Minus = Math.random() < 0.5 && running1 > t3 + 12;
+          ans = isT3Minus ? running1 - t3 : running1 + t3;
+          expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        }
+
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 3, is3Digit: false }]);
         return {
           family: `as_2d_3t_${t1 % 10}`,
@@ -3240,14 +3616,14 @@
       // 3. 2-Digit 4-5 Term Mixed Chain (Multi-Term Balanced)
       twoDigitMultiTerm: (id) => {
         const category = 'Addition & Subtraction';
-        const termCount = configDifficulty === 'easy' ? 4 : (configDifficulty === 'hard' ? 5 : pickRandom([4, 5]));
+        const termCount = configDifficulty === 'hard' ? 5 : 4;
         const terms = [];
         const ops = [];
         let currentRunning = randInt(45, 99);
         terms.push(currentRunning);
 
         for (let i = 1; i < termCount; i++) {
-          const nextVal = randInt(18, 98);
+          const nextVal = randInt(18, 88);
           const op = (currentRunning > nextVal + 25 && Math.random() < 0.45) ? '-' : '+';
           ops.push(op);
           terms.push(nextVal);
@@ -3271,13 +3647,13 @@
         };
       },
 
-      // 4. 2-Digit DILR Column Sums (4-6 terms)
+      // 4. 2-Digit DILR Column Sums (3-6 terms)
       twoDigitColumnSum: (id) => {
         const category = 'Addition & Subtraction';
-        const count = configDifficulty === 'easy' ? 4 : (configDifficulty === 'hard' ? 6 : 5);
+        const count = configDifficulty === 'hard' ? pickRandom([5, 6]) : pickRandom([3, 4]);
         const terms = [];
         for (let i = 0; i < count; i++) {
-          terms.push(randInt(28, 98));
+          terms.push(randInt(25, 95));
         }
         const sum = terms.reduce((acc, v) => acc + v, 0);
         const expr = terms.join(' + ');
@@ -3298,7 +3674,25 @@
         const category = 'Addition & Subtraction';
         const isPlus = Math.random() > 0.45;
         let t1, t2, ans, expr, hint, shortcut;
-        if (isPlus) {
+
+        if (configDifficulty === 'easy') {
+          // STRICTLY clean multiples of 10, 25, or 50 for frictionless mental calculation
+          if (isPlus) {
+            t1 = randInt(15, 65) * 10;
+            t2 = randInt(12, 45) * 10;
+            ans = t1 + t2;
+            expr = `${t1} + ${t2}`;
+            hint = `Multiples of 10: (${t1/10} + ${t2/10}) × 10 = ${ans}`;
+            shortcut = `${t1} + ${t2} = ${ans}`;
+          } else {
+            t1 = randInt(35, 95) * 10;
+            t2 = randInt(12, (t1 / 10) - 5) * 10;
+            ans = t1 - t2;
+            expr = `${t1} - ${t2}`;
+            hint = `Multiples of 10: (${t1/10} - ${t2/10}) × 10 = ${ans}`;
+            shortcut = `${t1} - ${t2} = ${ans}`;
+          }
+        } else if (isPlus) {
           t1 = randInt(180, 750);
           t2 = randInt(140, 680);
           ans = t1 + t2;
@@ -3329,19 +3723,32 @@
         };
       },
 
-      // 6. Pure 3-Digit 3-Term Mixed Speed (Mixed + and -)
+      // 6. Pure 3-Digit 3-Term Mixed Speed (Mixed + and -) - Normal & Hard
       threeDigitThreeTerm: (id) => {
         const category = 'Addition & Subtraction';
-        const t1 = randInt(250, 680);
-        const t2 = randInt(140, 480);
-        const isT2Minus = Math.random() < 0.45 && t1 > t2 + 60;
-        const running1 = isT2Minus ? t1 - t2 : t1 + t2;
+        let t1, t2, t3, isT2Minus, isT3Minus, running1, ans, expr;
 
-        const t3 = randInt(110, 390);
-        const isT3Minus = Math.random() < 0.5 && running1 > t3 + 50;
-        const ans = isT3Minus ? running1 - t3 : running1 + t3;
+        if (configDifficulty === 'normal') {
+          // Multiples of 10 for clean mental retention without scratchpad
+          t1 = randInt(25, 65) * 10;
+          t2 = randInt(14, 45) * 10;
+          isT2Minus = Math.random() < 0.45 && t1 > t2 + 60;
+          running1 = isT2Minus ? t1 - t2 : t1 + t2;
+          t3 = randInt(11, 35) * 10;
+          isT3Minus = Math.random() < 0.5 && running1 > t3 + 50;
+          ans = isT3Minus ? running1 - t3 : running1 + t3;
+          expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        } else {
+          t1 = randInt(250, 680);
+          t2 = randInt(140, 480);
+          isT2Minus = Math.random() < 0.45 && t1 > t2 + 60;
+          running1 = isT2Minus ? t1 - t2 : t1 + t2;
+          t3 = randInt(110, 390);
+          isT3Minus = Math.random() < 0.5 && running1 > t3 + 50;
+          ans = isT3Minus ? running1 - t3 : running1 + t3;
+          expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
+        }
 
-        const expr = `${t1} ${isT2Minus ? '-' : '+'} ${t2} ${isT3Minus ? '-' : '+'} ${t3}`;
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 3, is3Digit: true }]);
         return {
           family: `as_3d_3t_${Math.floor(t1 / 100)}`,
@@ -3352,7 +3759,7 @@
         };
       },
 
-      // 7. 3-Digit 4-Term Multi-Term Speed (Speed Balancing)
+      // 7. 3-Digit 4-Term Multi-Term Speed (Speed Balancing) - Strictly Hard
       threeDigitMultiTerm: (id) => {
         const category = 'Addition & Subtraction';
         const t1 = randInt(220, 580);
@@ -3378,10 +3785,10 @@
         };
       },
 
-      // 8. 3-Digit DILR Column Sums (3-4 terms)
+      // 8. 3-Digit DILR Column Sums (3-4 terms) - Strictly Hard
       threeDigitColumnSum: (id) => {
         const category = 'Addition & Subtraction';
-        const count = configDifficulty === 'hard' ? 4 : (configDifficulty === 'easy' ? 3 : pickRandom([3, 4]));
+        const count = pickRandom([3, 4]);
         const terms = [];
         for (let i = 0; i < count; i++) {
           const base = randInt(14, 68) * 10 + pickRandom([0, 5, 2, 8]);
@@ -3404,9 +3811,17 @@
       // 9. Mixed 2-Digit & 3-Digit Combined Speed
       mixedDigitsSpeed: (id) => {
         const category = 'Addition & Subtraction';
-        const t1 = randInt(250, 780);
-        const t2 = randInt(28, 95);
-        const t3 = randInt(25, 92);
+        let t1, t2, t3;
+        if (configDifficulty === 'easy') {
+          t1 = pickRandom([250, 300, 350, 400, 450, 500, 550, 600, 650]);
+          t2 = pickRandom([20, 25, 30, 35, 40, 50]);
+          t3 = pickRandom([10, 15, 20, 25, 30]);
+        } else {
+          t1 = randInt(250, 780);
+          t2 = randInt(28, 95);
+          t3 = randInt(25, 92);
+        }
+
         const isT2Plus = Math.random() > 0.4;
         const isT3Plus = Math.random() > 0.5;
         let ans = isT2Plus ? t1 + t2 : t1 - t2;
@@ -3425,8 +3840,21 @@
       // 10. Complementary Subtraction (Base 500, 1000, 1500, 2000)
       complementarySubtraction: (id) => {
         const category = 'Addition & Subtraction';
-        const base = pickRandom([500, 1000, 1000, 1200, 1500, 2000]);
-        const subVal = base === 500 ? randInt(65, 435) : (base === 1000 ? randInt(145, 895) : randInt(250, base - 150));
+        let base, subVal;
+
+        if (configDifficulty === 'easy') {
+          base = pickRandom([500, 1000]);
+          subVal = base === 500 
+            ? pickRandom([120, 140, 150, 160, 220, 240, 250, 320, 350, 380, 420]) 
+            : pickRandom([150, 240, 250, 320, 350, 450, 550, 620, 650, 720, 750, 850]);
+        } else if (configDifficulty === 'normal') {
+          base = pickRandom([500, 1000, 1000, 1500]);
+          subVal = base === 500 ? randInt(65, 435) : (base === 1000 ? randInt(145, 895) : randInt(250, base - 150));
+        } else {
+          base = pickRandom([1000, 1200, 1500, 2000]);
+          subVal = randInt(250, base - 150);
+        }
+
         const ans = base - subVal;
         const expr = `${base} - ${subVal}`;
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: true }]);
@@ -3434,7 +3862,7 @@
           family: `as_comp_${base}_${subVal % 10}`,
           signature: `as_comp_${base}_${subVal}`,
           id, category, expr, ans, targetSec,
-          hint: base === 1000 || base === 2000 ? `Vedic complement: match 9s for leading digits and 10 for unit digit` : `Subtract hundreds then tens/units from ${base}`,
+          hint: base === 1000 || base === 2000 ? `Vedic complement: match 9s for leading digits and 10 for unit digit` : `Subtract from ${base}`,
           shortcut: `${base} - ${subVal} = ${ans}`
         };
       },
@@ -3589,26 +4017,40 @@
         const category = 'Powers';
         const sq = sessionAnchors.square;
         const sqVal = sq * sq;
-        const template = randInt(1, 4);
         let expr, ans, offset;
-        if (template === 1) {
-          offset = randInt(35, 250);
-          ans = sqVal + offset;
-          expr = `${sq}² + ${offset}`;
-        } else if (template === 2) {
-          offset = randInt(35, Math.min(sqVal - 10, 230));
-          ans = sqVal - offset;
-          expr = `${sq}² - ${offset}`;
-        } else if (template === 3) {
-          offset = sqVal + randInt(40, 260);
-          ans = offset - sqVal;
-          expr = `${offset} - ${sq}²`;
+
+        if (configDifficulty === 'easy') {
+          const isPure = Math.random() < 0.60;
+          if (isPure) {
+            ans = sqVal;
+            expr = `${sq}²`;
+          } else {
+            offset = pickRandom([10, 20, 25, 50]);
+            ans = sqVal + offset;
+            expr = `${sq}² + ${offset}`;
+          }
         } else {
-          const mult = randInt(2, 4);
-          offset = randInt(20, 150);
-          ans = (sqVal * mult) + offset;
-          expr = `(${sq}² × ${mult}) + ${offset}`;
+          const template = randInt(1, 4);
+          if (template === 1) {
+            offset = randInt(35, configDifficulty === 'hard' ? 250 : 160);
+            ans = sqVal + offset;
+            expr = `${sq}² + ${offset}`;
+          } else if (template === 2) {
+            offset = randInt(25, Math.min(sqVal - 10, configDifficulty === 'hard' ? 230 : 140));
+            ans = sqVal - offset;
+            expr = `${sq}² - ${offset}`;
+          } else if (template === 3) {
+            offset = sqVal + randInt(30, configDifficulty === 'hard' ? 260 : 150);
+            ans = offset - sqVal;
+            expr = `${offset} - ${sq}²`;
+          } else {
+            const mult = configDifficulty === 'hard' ? randInt(2, 4) : 2;
+            offset = randInt(20, 150);
+            ans = (sqVal * mult) + offset;
+            expr = `(${sq}² × ${mult}) + ${offset}`;
+          }
         }
+
         const targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `anc_sq_${sq}`,
@@ -3622,26 +4064,40 @@
       fractionAnchor: (id) => {
         const category = 'Fractions & %';
         const f = sessionAnchors.fraction;
-        const multipliers = [3, 4, 5, 6, 7, 8, 9, 12, 15, 16, 18, 20, 24];
+        const multipliers = configDifficulty === 'easy' ? [2, 3, 4, 5, 6, 8, 10] : [3, 4, 5, 6, 7, 8, 9, 12, 15, 16, 18, 20];
         const multChoice = pickRandom(multipliers);
         const base = f.denom * multChoice * 10;
         const fracTerm = Math.round((base / f.denom) * f.mult);
-        const offset = randInt(35, 190);
-        const template = randInt(1, 3);
         let expr, ans;
-        if (template === 1) {
-          ans = fracTerm + offset;
-          expr = `(${f.p} of ${base}) + ${offset}`;
-        } else if (template === 2) {
-          ans = Math.abs(fracTerm - offset);
-          expr = fracTerm >= offset ? `(${f.p} of ${base}) - ${offset}` : `${offset} - (${f.p} of ${base})`;
+
+        if (configDifficulty === 'easy') {
+          const isPure = Math.random() < 0.65;
+          if (isPure) {
+            ans = fracTerm;
+            expr = `${f.p} of ${base}`;
+          } else {
+            const offset = pickRandom([10, 20, 25, 50]);
+            ans = fracTerm + offset;
+            expr = `(${f.p} of ${base}) + ${offset}`;
+          }
         } else {
-          const t = randInt(14, 25);
-          const m = randInt(3, 7);
-          const tableVal = t * m;
-          ans = fracTerm + tableVal;
-          expr = `(${f.p} of ${base}) + (${t} × ${m})`;
+          const offset = randInt(25, configDifficulty === 'hard' ? 220 : 150);
+          const template = randInt(1, 3);
+          if (template === 1) {
+            ans = fracTerm + offset;
+            expr = `(${f.p} of ${base}) + ${offset}`;
+          } else if (template === 2) {
+            ans = Math.abs(fracTerm - offset);
+            expr = fracTerm >= offset ? `(${f.p} of ${base}) - ${offset}` : `${offset} - (${f.p} of ${base})`;
+          } else {
+            const t = randInt(12, 22);
+            const m = randInt(3, 6);
+            const tableVal = t * m;
+            ans = fracTerm + tableVal;
+            expr = `(${f.p} of ${base}) + (${t} × ${m})`;
+          }
         }
+
         const targetSec = computeDynamicIdealTime([{ type: 'frac', denom: f.denom, mult: f.mult }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `anc_frac_${f.label}`,
@@ -3655,25 +4111,39 @@
       tableAnchor: (id) => {
         const category = 'Tables & Products';
         const t = sessionAnchors.table;
-        const m = randInt(4, 9);
+        const m = configDifficulty === 'easy' ? randInt(2, 6) : randInt(4, 9);
         const tableTerm = t * m;
-        const template = randInt(1, 3);
         let expr, ans;
-        if (template === 1) {
-          const offset = randInt(35, 180);
-          ans = tableTerm + offset;
-          expr = `(${t} × ${m}) + ${offset}`;
-        } else if (template === 2) {
-          const offset = randInt(25, Math.min(tableTerm - 10, 160));
-          ans = tableTerm - offset;
-          expr = `(${t} × ${m}) - ${offset}`;
+
+        if (configDifficulty === 'easy') {
+          const isPure = Math.random() < 0.65;
+          if (isPure) {
+            ans = tableTerm;
+            expr = `${t} × ${m}`;
+          } else {
+            const offset = pickRandom([10, 20, 25]);
+            ans = tableTerm + offset;
+            expr = `(${t} × ${m}) + ${offset}`;
+          }
         } else {
-          const dividend = t * randInt(12, 45);
-          const quotient = Math.round(dividend / t);
-          const offset = randInt(25, 150);
-          ans = quotient + offset;
-          expr = `(${dividend} ÷ ${t}) + ${offset}`;
+          const template = randInt(1, 3);
+          if (template === 1) {
+            const offset = randInt(25, configDifficulty === 'hard' ? 220 : 150);
+            ans = tableTerm + offset;
+            expr = `(${t} × ${m}) + ${offset}`;
+          } else if (template === 2) {
+            const offset = randInt(20, Math.min(tableTerm - 10, configDifficulty === 'hard' ? 200 : 140));
+            ans = tableTerm - offset;
+            expr = `(${t} × ${m}) - ${offset}`;
+          } else {
+            const dividend = t * randInt(8, configDifficulty === 'hard' ? 45 : 25);
+            const quotient = Math.round(dividend / t);
+            const offset = randInt(20, 120);
+            ans = quotient + offset;
+            expr = `(${dividend} ÷ ${t}) + ${offset}`;
+          }
         }
+
         const targetSec = computeDynamicIdealTime([{ type: 'table', t, m }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `anc_tbl_${t}`,
@@ -3716,10 +4186,14 @@
         }
 
         // Fallback fill
-        while (opts.size < 4) {
+        let fillTries = 0;
+        while (opts.size < 4 && fillTries++ < 50) {
           const delta = randInt(1, 12) * (Math.random() > 0.5 ? 10 : -10);
           const candidate = correctAns + delta;
           if (candidate >= 0) opts.add(candidate);
+        }
+        while (opts.size < 4) {
+          opts.add(Math.max(0, Number.isFinite(correctAns) ? correctAns : 0) + opts.size * 10 + 1);
         }
 
         return Array.from(opts).sort(() => Math.random() - 0.5);
@@ -3736,27 +4210,27 @@
       if (enabledTopics.has('powers')) {
         activeGenerators.push(ArchetypesPowers.directSquare);
         activeGenerators.push(ArchetypesPowers.endingInFiveSquare);
-        activeGenerators.push(ArchetypesPowers.dualSquares);
         activeGenerators.push(ArchetypesPowers.consecutiveSquareProduct);
+        activeGenerators.push(ArchetypesPowers.cubesAndRoots);
+        activeGenerators.push(ArchetypesPowers.higherPowers);
         if (configDifficulty !== 'easy') {
+          activeGenerators.push(ArchetypesPowers.dualSquares);
           activeGenerators.push(ArchetypesPowers.base50Squaring);
           activeGenerators.push(ArchetypesPowers.base100Squaring);
           activeGenerators.push(ArchetypesPowers.differenceOfSquares);
           activeGenerators.push(ArchetypesPowers.cubeSquareComposite);
         }
-        activeGenerators.push(ArchetypesPowers.cubesAndRoots);
-        activeGenerators.push(ArchetypesPowers.higherPowers);
       }
 
       // Category 2: Fractions & Percentages
       if (enabledTopics.has('fractions')) {
         activeGenerators.push(ArchetypesFractions.clusteredPercentage);
-        activeGenerators.push(ArchetypesFractions.distributiveBasePercentage);
-        activeGenerators.push(ArchetypesFractions.successivePercentages);
         activeGenerators.push(ArchetypesFractions.percentageReversal);
         activeGenerators.push(ArchetypesFractions.speedConversion);
-        activeGenerators.push(ArchetypesFractions.percentageGrowthIndexing);
         if (configDifficulty !== 'easy') {
+          activeGenerators.push(ArchetypesFractions.distributiveBasePercentage);
+          activeGenerators.push(ArchetypesFractions.successivePercentages);
+          activeGenerators.push(ArchetypesFractions.percentageGrowthIndexing);
           activeGenerators.push(ArchetypesFractions.dualFractionComposite);
         }
       }
@@ -3764,18 +4238,20 @@
       // Category 3: Tables & Products
       if (enabledTopics.has('tables')) {
         activeGenerators.push(ArchetypesMultiplication.breakApartMultiplication);
-        activeGenerators.push(ArchetypesMultiplication.nearBaseMultiplication);
-        activeGenerators.push(ArchetypesMultiplication.commonFactorDistributive);
         activeGenerators.push(ArchetypesMultiplication.doubleAndHalve);
-        activeGenerators.push(ArchetypesMultiplication.directTableDifferences);
-        activeGenerators.push(ArchetypesMultiplication.twinProducts);
-        activeGenerators.push(ArchetypesMultiplication.dualProductComposite);
         activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes);
         activeGenerators.push(ArchetypesMultiplication.mentalDivisionByPrimes); // Double weighted for strong frequency
         activeGenerators.push(ArchetypesMultiplication.primeMultiplication);
         activeGenerators.push(ArchetypesMultiplication.primeMultiplication);     // Double weighted for strong frequency
         activeGenerators.push(ArchetypesMultiplication.catSpecialNumbers);
         activeGenerators.push(ArchetypesMultiplication.highYieldTables);
+        if (configDifficulty !== 'easy') {
+          activeGenerators.push(ArchetypesMultiplication.nearBaseMultiplication);
+          activeGenerators.push(ArchetypesMultiplication.commonFactorDistributive);
+          activeGenerators.push(ArchetypesMultiplication.directTableDifferences);
+          activeGenerators.push(ArchetypesMultiplication.twinProducts);
+          activeGenerators.push(ArchetypesMultiplication.dualProductComposite);
+        }
       }
 
       // Category 4: Factorials
@@ -3783,30 +4259,51 @@
         activeGenerators.push(ArchetypesFactorials.factorialRatio);
         activeGenerators.push(ArchetypesFactorials.factorialCompound);
         activeGenerators.push(ArchetypesFactorials.combinatorics);
-        activeGenerators.push(ArchetypesFactorials.dualFactorialRatio);
+        if (configDifficulty !== 'easy') {
+          activeGenerators.push(ArchetypesFactorials.dualFactorialRatio);
+        }
       }
 
-      // Category 5: Addition & Subtraction (Significantly Boosted Frequency: Both 2-Digit & 3-Digit Versions)
+      // Category 5: Addition & Subtraction (Calibrated strictly by working memory load)
       if (enabledTopics.has('add_sub')) {
-        // 2-Digit Sprints & Chains (Multi-weighted for high frequency)
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);       // High weight
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);  // High weight
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitMultiTerm);
-        activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitColumnSum);
-
-        // 3-Digit Sprints & Chains (Multi-weighted for high frequency)
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);     // High weight
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm);
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm); // High weight
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitMultiTerm);
-        activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitColumnSum);
-
-        // Mixed 2D + 3D Adjustments & Base Complements
-        activeGenerators.push(ArchetypesAdditionSubtraction.mixedDigitsSpeed);
-        activeGenerators.push(ArchetypesAdditionSubtraction.complementarySubtraction);
+        if (configDifficulty === 'easy') {
+          // Pure mental sprints: 2-term pairs & friendly 3-term round complements, zero memory overload
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair); // Clean round 10/25/50 multiples
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.mixedDigitsSpeed);
+          activeGenerators.push(ArchetypesAdditionSubtraction.complementarySubtraction);
+        } else if (configDifficulty === 'normal') {
+          // Challenging mental math: multi-term 2D, column sums, 3D pairs & clean 3D 3-terms (NO memory blowout 4-term 3D)
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitMultiTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitColumnSum);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.mixedDigitsSpeed);
+          activeGenerators.push(ArchetypesAdditionSubtraction.complementarySubtraction);
+        } else {
+          // Hard: Elite / Pen-and-paper multi-term 3D & 3D column sums
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitMultiTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.twoDigitColumnSum);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitPair);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitThreeTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitMultiTerm);
+          activeGenerators.push(ArchetypesAdditionSubtraction.threeDigitColumnSum);
+          activeGenerators.push(ArchetypesAdditionSubtraction.mixedDigitsSpeed);
+          activeGenerators.push(ArchetypesAdditionSubtraction.complementarySubtraction);
+        }
       }
 
       // Category 6: Roots & Decimals
@@ -3819,22 +4316,24 @@
         }
       }
 
-      // Category 7: Multi-Topic Cross Hybrids
-      if (enabledTopics.has('powers') && enabledTopics.has('fractions')) {
-        activeGenerators.push(ArchetypesHybrids.powersFractions);
-      }
-      if (enabledTopics.has('fractions') && enabledTopics.has('tables')) {
-        activeGenerators.push(ArchetypesHybrids.fractionsTables);
-      }
-      if (enabledTopics.has('factorials') && enabledTopics.has('powers')) {
-        activeGenerators.push(ArchetypesHybrids.factorialsPowers);
-        activeGenerators.push(ArchetypesHybrids.powersCombinatorics);
-      }
-      if (enabledTopics.has('roots_decimals') && enabledTopics.has('tables')) {
-        activeGenerators.push(ArchetypesHybrids.rootsTables);
-      }
-      if (enabledTopics.has('roots_decimals') && enabledTopics.has('factorials')) {
-        activeGenerators.push(ArchetypesHybrids.rootsFactorials);
+      // Category 7: Multi-Topic Cross Hybrids (Strictly excluded on Easy)
+      if (configDifficulty !== 'easy') {
+        if (enabledTopics.has('powers') && enabledTopics.has('fractions')) {
+          activeGenerators.push(ArchetypesHybrids.powersFractions);
+        }
+        if (enabledTopics.has('fractions') && enabledTopics.has('tables')) {
+          activeGenerators.push(ArchetypesHybrids.fractionsTables);
+        }
+        if (enabledTopics.has('factorials') && enabledTopics.has('powers')) {
+          activeGenerators.push(ArchetypesHybrids.factorialsPowers);
+          activeGenerators.push(ArchetypesHybrids.powersCombinatorics);
+        }
+        if (enabledTopics.has('roots_decimals') && enabledTopics.has('tables')) {
+          activeGenerators.push(ArchetypesHybrids.rootsTables);
+        }
+        if (enabledTopics.has('roots_decimals') && enabledTopics.has('factorials')) {
+          activeGenerators.push(ArchetypesHybrids.rootsFactorials);
+        }
       }
 
       // Category 8: Sprint Focus Anchors

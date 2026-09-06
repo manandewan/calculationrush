@@ -57,6 +57,24 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
   • Factorials & Combinatorics: CAT Combinatorics evaluations (nCr instant recall and dual combination arithmetic: 7C2 + 6C2 = 36, 8C3 - 26 = 30), dual factorial ratio arithmetic ((7!/5!) + (6!/4!) = 72).
   • Cross-Topic Hybrids: Roots + Factorials (√576 + (6!/4!) = 54), Powers + Combinatorics (16² + 7C2 = 277).
   • Service Worker bumped to cache v3 for instant client-side PWA updates.
+[Prompt 139]: Mental Math Cognitive Difficulty Calibration:
+  • "Ensure the questions are atleast doable mentally, without pen and paper. Easy should definitely be possible to do mentally. Normal should be possible to do mentally but a little challenging. Hard should be for the elite or meant to need pen and paper."
+  • Easy Mode Calibration:
+    - Pure working-memory conservation: Instant recall, friendly round numbers (clean 10/25/50 multiples), single-step operations.
+    - Addition/Subtraction: 2-term pairs with minimal carries (42 + 35, 76 - 32), 3-term round complements (25 + 35 + 40), 3-digit pairs strictly rounded to multiples of 10/25/50 (240 + 150 = 390, 750 - 320 = 430). Strictly EXCLUDE 4-5 term chains and 3D column sums.
+    - Multiplication/Tables: Small prime divisions (3, 5, 7, 11) with clean dividends (84 ÷ 7, 65 ÷ 5), friendly tables (12-16, 20, 25), pure single-step tables. Strictly EXCLUDE multi-term composites, base-200, near-base, and twin products.
+    - Powers: Pure squares (12-25), clean square roots (√144-√625), cubes (2-6, 10), higher powers (2^3-2^6, 3^3-3^4, 5^3). Zero dual squares, zero base-50/100 squaring, zero difference of squares.
+    - Fractions: Friendly denominators (2, 4, 5, 8, 10), pure speed conversions, friendly decimals. Zero distributive collapse, zero successive percentages, zero dual fraction composites.
+    - Factorials: Instant recall nCr (5C2, 6C2, 7C2, 8C2), pure cancellations (5!/3!, 6!/4!). Zero dual factorial ratios.
+    - Hybrids: ZERO cross-topic hybrids on Easy!
+  • Normal Mode Calibration:
+    - Tests mental shortcuts & distributive factoring without memory blowout.
+    - Unlocks distributive percentage collapse, successive chained percentages, common-factor extraction, twin products, near-base multiplication, 4-term 2D chains, 3-4 term 2D column sums, 3-digit pairs, clean 10s 3-digit 3-terms, and standard 2-step hybrids.
+    - Memory blowout archetypes (3-digit multi-term 4-chains and 3-digit column sums) are EXCLUDED from Normal and reserved strictly for Hard.
+  • Hard Mode Calibration:
+    - Designed for elite mental calculators or pen-and-paper scratchpad drills.
+    - Unlocks 4-term 3-digit multi-term chains, 4-row 3-digit column sums, 5-6 term 2D column sums, tough prime divisions (e.g. 1547 ÷ 17 = 91), base-200 squaring/multiplication, dual composites, and heavy cross-topic hybrids.
+  • Service Worker bumped to cache v4 for automatic client update propagation.
 
 ================================================================================
 3. QUESTION GENERATION ENGINE RULES & SPECIFICATIONS
