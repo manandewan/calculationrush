@@ -75,6 +75,43 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
     - Designed for elite mental calculators or pen-and-paper scratchpad drills.
     - Unlocks 4-term 3-digit multi-term chains, 4-row 3-digit column sums, 5-6 term 2D column sums, tough prime divisions (e.g. 1547 ÷ 17 = 91), base-200 squaring/multiplication, dual composites, and heavy cross-topic hybrids.
   • Service Worker bumped to cache v4 for automatic client update propagation.
+[Prompt 140]: Negative Numbers & Signed Powers Cognitive Overhaul:
+  • "Add negative numbers to everything. Increase frequency. especially in squares and cubes. Make new question type like -3 cube *+- 2power 4 types"
+  • Negative Numbers Across All Tracks:
+    - Powers & Roots: High frequency negative numbers (~45-50% in squares and cubes).
+      • Pure Squares: (-sq)² = sqVal, -sq² = -sqVal (tests understanding of unary minus vs even power).
+      • Offset Squares: (-sq)² - offset < 0, offset - (-sq)² < 0, -sq² + offset, -sq² - offset.
+      • Ending in 5: (-num)² = numSq, -num² = -numSq, (-num)² - offset.
+      • Difference of Squares: reversed difference b² - a² = -diffTerm, (b² - a²) ± offset < 0.
+      • Square Roots: -√sqNum = -base, √sqNum - offset < 0, -√sqNum - offset < 0.
+      • Cubes & Cube Roots: (-cb)³ = -cbVal, ∛(-cbVal) = -cb, -cb³ = -cbVal, (-cb)³ ± offset, ∛(-cbVal) ± offset.
+      • Higher Powers: (-base)^exp with signed signs depending on exponent parity; offset subtractions yielding negative answers.
+      • Dual Squares: a² - b² < 0 where a < b.
+      • Cube Square Composites: (-c)³ + sq², sq² - c³ < 0.
+    - Addition & Subtraction: ~40% negative frequency:
+      • 2-digit pairs: t1 - t2 < 0 (negative difference), -t1 + t2, -t1 - t2.
+      • 2-digit 3-terms: negative intermediate running totals and negative final answers.
+      • 3-digit pairs: multiples of 10 with negative answers (240 - 580 = -340), -t1 + t2.
+      • Complementary Subtractions: subVal - base = -(base - subVal).
+    - Multiplication & Tables:
+      • Prime Division: (-dividend) ÷ prime = -quotient, ((-dividend) ÷ prime) ± offset.
+      • Prime Multiplication: (-prime) × m = -prod, ((-prime) × m) ± offset.
+      • High Yield Tables: -t × m = -tableTerm, (t × m) - offset < 0.
+      • Direct Table Differences: (t1 × m1) - (t2 × m2) < 0.
+  • New Dedicated Archetype: Signed Powers Composite (`ArchetypesPowers.signedPowersComposite`):
+    - Generates signed powers arithmetic expressions: (-3)³ × 2⁴, (-3)³ + 2⁴, (-3)³ - 2⁴, 2⁴ - (-3)³, (-2)⁵ + 3⁴, (-2)⁵ × 3², (-4)² × (-2)³, etc.
+    - Uses Unicode superscripts (⁰, ¹, ², ³, ⁴, ⁵, ⁶, ⁷, ⁸, ⁹) via `formatPowerTerm(b, p)` for clean rendering.
+    - Tiered across Easy, Normal, and Hard for mental calculation solvability.
+    - Double-weighted in Category 1 (Powers & Roots) for high quiz frequency.
+  • Cognitive Distractor Generator Update:
+    - Removed all non-negative constraints (`candidate >= 0`).
+    - Added the Crucial Opposite-Sign Trap: automatically adds `-correctAns` to MCQ options, punishing sign errors.
+    - Generates 4 unique options with zero NaNs or duplicate options.
+  • UI & TITA Input System:
+    - Mobile numeric keyboard lacks a minus (-) key: added a dedicated tactile `±` toggle button next to input (`#rush-neg-toggle`).
+    - Desktop keyboard handling: pressing `-` or `Subtract` automatically toggles leading minus sign.
+    - Text input mode with decimal pad (`<input type="text" inputmode="decimal">`) with input filtering for digits, '.', and leading '-'.
+  • Service Worker bumped to cache v5 for automatic client-side PWA updates.
 
 ================================================================================
 3. QUESTION GENERATION ENGINE RULES & SPECIFICATIONS
