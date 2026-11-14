@@ -4480,11 +4480,12 @@
     const DistractorGenerator = {
       generateDistractors: (correctAns, expr = '') => {
         const opts = new Set([correctAns]);
-        const hasNegOrSub = typeof expr === 'string' && (expr.includes('-') || expr.includes('−'));
-        const allowNegative = correctAns < 0 || hasNegOrSub;
+        const hasNegativeTerm = typeof expr === 'string' && /(^-|\(-|-√|∛\(-)/.test(expr.trim());
+        const isCloseSub = typeof expr === 'string' && (expr.includes('-') || expr.includes('−')) && correctAns > 0 && correctAns <= 50;
 
-        // Trap 0: Opposite Sign Trap (ONLY when answer is negative or expression involves subtraction/negatives)
-        if (correctAns !== 0 && allowNegative) {
+        // Trap 0: Opposite Sign Trap
+        // Only add -correctAns when the answer is negative, the expression has negative terms, or it's a close subtraction (prevents magnitude leaks like 16³ - 100 having -3996)
+        if (correctAns !== 0 && (correctAns < 0 || hasNegativeTerm || isCloseSub)) {
           opts.add(-correctAns);
         }
 
