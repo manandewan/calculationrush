@@ -4478,11 +4478,13 @@
     // 3. COGNITIVE DISTRACTOR GENERATOR FOR MCQs
     // ==========================================
     const DistractorGenerator = {
-      generateDistractors: (correctAns) => {
+      generateDistractors: (correctAns, expr = '') => {
         const opts = new Set([correctAns]);
+        const hasNegOrSub = typeof expr === 'string' && (expr.includes('-') || expr.includes('−'));
+        const allowNegative = correctAns < 0 || hasNegOrSub;
 
-        // Trap 0: Opposite Sign Trap (Crucial CAT trap: e.g. -11 vs +11, 49 vs -49)
-        if (correctAns !== 0) {
+        // Trap 0: Opposite Sign Trap (ONLY when answer is negative or expression involves subtraction/negatives)
+        if (correctAns !== 0 && allowNegative) {
           opts.add(-correctAns);
         }
 
@@ -4492,7 +4494,7 @@
         for (let delta of unitTraps) {
           if (opts.size >= 3) break;
           const candidate = correctAns + delta;
-          if (candidate !== correctAns) {
+          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) {
             opts.add(candidate);
           }
         }
@@ -4503,7 +4505,7 @@
         for (let delta of slipTraps) {
           if (opts.size >= 4) break;
           const candidate = correctAns + delta;
-          if (candidate !== correctAns) {
+          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) {
             opts.add(candidate);
           }
         }
@@ -4513,11 +4515,12 @@
         while (opts.size < 4 && fillTries++ < 50) {
           const delta = randInt(1, 12) * (Math.random() > 0.5 ? 10 : -10);
           const candidate = correctAns + delta;
-          if (candidate !== correctAns) opts.add(candidate);
+          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) opts.add(candidate);
         }
         while (opts.size < 4) {
-          const offset = (opts.size) * (correctAns < 0 ? -10 : 10) + (Math.random() > 0.5 ? 1 : -1);
-          opts.add(correctAns + offset);
+          const step = opts.size * 10 + 1;
+          const candidate = correctAns < 0 ? correctAns - step : correctAns + step;
+          opts.add(candidate);
         }
 
         return Array.from(opts).sort(() => Math.random() - 0.5);
@@ -4709,7 +4712,7 @@
 
       // Attach Cognitive Distractors if MCQ mode
       if (configQType === 'mcq') {
-        q.mcqOptions = DistractorGenerator.generateDistractors(q.ans);
+        q.mcqOptions = DistractorGenerator.generateDistractors(q.ans, q.expr);
       }
 
       return q;
