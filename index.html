@@ -1687,7 +1687,7 @@
 
     if (type === 'duration') {
       configDuration = val;
-      document.getElementById('launch-sprint-btn').textContent = `🚀 Launch ${val}-Min Sprint`;
+      document.getElementById('launch-sprint-btn').textContent = `Launch ${val}-Min Sprint`;
     } else if (type === 'difficulty') {
       configDifficulty = val;
     } else if (type === 'qtype') {
@@ -1942,18 +1942,20 @@
             if (isUnaryMinus) {
               ans = -sqVal;
               expr = `-${sq}²`;
-              hint = `Unary minus on square: -${sq}² = -(${sq}²) = -${sqVal}`;
+              hint = `Order of operations: -a² = -(a²), square before unary minus`;
               shortcut = `-${sq}² = -${sqVal}`;
             } else {
               ans = sqVal;
               expr = `(-${sq})²`;
-              hint = `Even power of a negative number: (-${sq})² = (-${sq}) × (-${sq}) = ${sqVal}`;
+              hint = `Even power of a negative base is positive: (-a)² = +a²`;
               shortcut = `(-${sq})² = ${sqVal}`;
             }
           } else {
             ans = sqVal;
             expr = `${sq}²`;
-            hint = `Recall: ${sq}² = ${sqVal}`;
+            hint = sq > 30
+              ? `(30 + ${sq - 30})² = 900 + 60×${sq - 30} + ${sq - 30}²`
+              : (sq > 25 && sq < 30 ? `(25 + ${sq - 25})² = 625 + 50×${sq - 25} + ${sq - 25}²` : null);
             shortcut = `Instant Recall: ${sq}² = ${sqVal}`;
           }
           targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }]);
@@ -1967,17 +1969,14 @@
           if (isNeg && Math.random() < 0.5) {
             ans = -sqVal + offset;
             expr = `-${sq}² + ${offset}`;
-            hint = `Unary minus first: -${sq}² = -${sqVal} ➔ -${sqVal} + ${offset} = ${ans}`;
             shortcut = `-${sq}² + ${offset} = -${sqVal} + ${offset} = ${ans}`;
           } else if (isNeg) {
             ans = sqVal + offset;
             expr = `(-${sq})² + ${offset}`;
-            hint = `(-${sq})² = ${sqVal} ➔ ${sqVal} + ${offset} = ${ans}`;
             shortcut = `(-${sq})² + ${offset} = ${ans}`;
           } else {
             ans = sqVal + offset;
             expr = `${sq}² + ${offset}`;
-            hint = `Recall: ${sq}² = ${sqVal}`;
             shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${sqVal} + ${offset} = ${ans}`;
           }
         } else if (template === 2) { // sq² - offset
@@ -1985,20 +1984,17 @@
             offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(20, 150);
             ans = -sqVal - offset;
             expr = `-${sq}² - ${offset}`;
-            hint = `Unary minus first: -${sq}² = -${sqVal} ➔ -${sqVal} - ${offset} = ${ans}`;
             shortcut = `-${sq}² - ${offset} = ${ans}`;
           } else if (isNeg && Math.random() < 0.6) {
             offset = sqVal + (configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50]) : randInt(15, 120));
             ans = sqVal - offset;
             expr = `(-${sq})² - ${offset}`;
-            hint = `(-${sq})² = ${sqVal} ➔ ${sqVal} - ${offset} = ${ans}`;
             shortcut = `(-${sq})² - ${offset} = ${sqVal} - ${offset} = ${ans}`;
           } else {
             const maxSub = Math.min(sqVal - 10, configDifficulty === 'hard' ? 220 : 140);
             offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 30, 50].filter(v => v < sqVal)) : randInt(20, maxSub);
             ans = sqVal - offset;
             expr = `${sq}² - ${offset}`;
-            hint = `Recall: ${sq}² = ${sqVal}`;
             shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${sqVal} - ${offset} = ${ans}`;
           }
         } else { // offset - sq²
@@ -2006,17 +2002,18 @@
             offset = configDifficulty === 'easy' ? pickRandom([10, 25, 50, 100].filter(v => v < sqVal)) : randInt(20, sqVal - 15);
             ans = offset - sqVal;
             expr = `${offset} - (-${sq})²`;
-            hint = `(-${sq})² = ${sqVal} ➔ ${offset} - ${sqVal} = ${ans}`;
             shortcut = `${offset} - (-${sq})² = ${offset} - ${sqVal} = ${ans}`;
           } else {
             offset = sqVal + (configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 260 : 150));
             ans = offset - sqVal;
             expr = `${offset} - ${sq}²`;
-            hint = `Recall: ${sq}² = ${sqVal}`;
             shortcut = `Recall: ${sq}² = ${sqVal} ➔ ${offset} - ${sqVal} = ${ans}`;
           }
         }
 
+        hint = isNeg
+          ? (expr.startsWith('-') ? `Order of operations: -${sq}² = -${sqVal} first` : `Even power: (-${sq})² = ${sqVal} first`)
+          : `Recall: ${sq}² = ${sqVal} first, then combine with ${offset}`;
         targetSec = computeDynamicIdealTime([{ type: 'sq', val: sq }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `sq_${sq}`,
@@ -2045,7 +2042,7 @@
               family: `sq_end5_${num}`,
               signature: `sq_end5_${num}_pure_${expr}`,
               id, category, expr, ans, targetSec,
-              hint: isUnary ? `Unary minus: -${num}² = -(${numSq})` : `Ending in 5: (-${num})² = (${k} × ${k + 1})×100 + 25 = ${numSq}`,
+              hint: isUnary ? `Unary minus after squaring: -((${k} × ${k + 1})×100 + 25)` : `Ending in 5 trick: (-${num})² = (${k} × ${k + 1})×100 + 25`,
               shortcut: `${expr} = ${ans}`
             };
           }
@@ -2056,7 +2053,7 @@
             family: `sq_end5_${num}`,
             signature: `sq_end5_${num}_pure`,
             id, category, expr, ans, targetSec,
-            hint: `Ending in 5 trick: ${num}² = (${k} × ${k + 1})×100 + 25 = ${k * (k + 1)}25 = ${numSq}`,
+            hint: `Ending in 5 trick: ${num}² = (${k} × ${k + 1})×100 + 25`,
             shortcut: `Ending in 5 trick: (${k} × ${k + 1})×100 + 25 = ${numSq}`
           };
         }
@@ -2150,8 +2147,8 @@
             signature: `diffsq_${a}_${b}_pure_${isReverse ? 'rev' : 'norm'}`,
             id, category, expr, ans, targetSec,
             hint: isReverse 
-              ? `Reversed difference: ${b}² - ${a}² = -(${a}² - ${b}²) = -(${a-b} × ${a+b}) = -${diffTerm}`
-              : `Use identity: a² - b² = (a - b)(a + b) = (${a} - ${b})(${a} + ${b}) = ${a - b} × ${a + b} = ${diffTerm}`,
+              ? `Reversed identity: ${b}² - ${a}² = -(${a} - ${b})(${a} + ${b}) = -(${a - b} × ${a + b})`
+              : `Use identity: a² - b² = (a - b)(a + b) = ${a - b} × ${a + b}`,
             shortcut: isReverse ? `${b}² - ${a}² = -(${a-b} × ${a+b}) = ${ans}` : `(${a} - ${b})(${a} + ${b}) = ${ans}`
           };
         }
@@ -2193,7 +2190,7 @@
             family: `sqrt_${base}`,
             signature: `sqrt_${base}_pure_${isNeg ? 'neg' : 'pos'}`,
             id, category, expr, ans, targetSec,
-            hint: isNeg ? `Unary minus on square root: -√${sqNum} = -(${base})` : `Recall: ${base}² = ${sqNum} ➔ √${sqNum} = ${base}`,
+            hint: isNeg ? `Unary minus outside radical: result is negative` : null,
             shortcut: `Instant Recall: ${expr} = ${ans}`
           };
         }
@@ -2217,7 +2214,7 @@
           family: `sqrt_${base}`,
           signature: `sqrt_${base}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall: ${base}² = ${sqNum} ➔ √${sqNum} = ${base}`,
+          hint: `Recall: ${base}² = ${sqNum}`,
           shortcut: `Step 1: √${sqNum} = ${base} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -2241,7 +2238,7 @@
               family: `cbrt_${cb}`,
               signature: `cbrt_${cb}_pure_${isNeg ? 'neg' : 'pos'}`,
               id, category: 'Roots & Decimals', expr, ans, targetSec,
-              hint: isNeg ? `Odd root preserves sign: ∛(-${cbVal}) = -${cb} (since (-${cb})³ = -${cbVal})` : `Recall: ${cb}³ = ${cbVal} ➔ ∛${cbVal} = ${cb}`,
+              hint: isNeg ? `Cube root of a negative number stays negative` : null,
               shortcut: `Instant Recall: ${expr} = ${ans}`
             };
           } else {
@@ -2253,7 +2250,7 @@
               family: `cube_${cb}`,
               signature: `cube_${cb}_pure_${expr}`,
               id, category, expr, ans, targetSec,
-              hint: isNeg ? `Negative cubed is negative: (-${cb})³ = -${cbVal}` : `Recall: ${cb}³ = ${cbVal}`,
+              hint: isNeg ? `Odd power of a negative number stays negative` : null,
               shortcut: `Instant Recall: ${expr} = ${ans}`
             };
           }
@@ -2281,7 +2278,7 @@
             family: `cbrt_${cb}`,
             signature: `cbrt_${cb}_${expr}`,
             id, category: 'Roots & Decimals', expr, ans, targetSec,
-            hint: `Recall: ∛${cbVal} = ${cb}`,
+            hint: `Recall: ${cb}³ = ${cbVal}`,
             shortcut: `Step 1: root evaluation ➔ Step 2: ${expr} = ${ans}`
           };
         } else {
@@ -2348,7 +2345,7 @@
             family: `pow_${base}_${exp}`,
             signature: `pow_${base}_${exp}_pure_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: isNeg ? `Power with negative: ${expr} = ${ans}` : `Recall: ${base}^${exp} = ${val}`,
+            hint: isNeg ? (expr.startsWith('-') ? `Order of operations: -aⁿ = -(aⁿ)` : (exp % 2 === 1 ? `Odd power of negative base is negative` : `Even power of negative base is positive`)) : null,
             shortcut: `Instant Recall: ${expr} = ${ans}`
           };
         }
@@ -2374,7 +2371,7 @@
           family: `pow_${base}_${exp}`,
           signature: `pow_${base}_${exp}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall: ${base}^${exp} = ${val}`,
+          hint: `Recall: ${base}^${exp} = ${val}, then combine with ${offset}`,
           shortcut: `Step 1: ${base}^${exp} = ${val} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -2413,7 +2410,7 @@
           family: `dualsq_${a}_${b}`,
           signature: `dualsq_${a}_${b}_${actualPlus ? 'add' : 'sub'}_${ans < 0 ? 'neg' : 'pos'}`,
           id, category, expr, ans, targetSec,
-          hint: `Evaluate both squares: ${a}² = ${aSq} and ${b}² = ${bSq} ➔ ${aSq} ${actualPlus ? '+' : '-'} ${bSq} = ${ans}`,
+          hint: `Recall squares: ${a}² = ${aSq} and ${b}² = ${bSq} (${actualPlus ? 'add' : 'subtract'} to finish)`,
           shortcut: `Step 1: ${a}² = ${aSq} | ${b}² = ${bSq} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -2448,7 +2445,7 @@
           family: `consec_sq_${item.m}`,
           signature: `consec_sq_${p1}_${p2}`,
           id, category, expr, ans, targetSec,
-          hint: `Midpoint identity: (${item.m} - ${item.d})(${item.m} + ${item.d}) = ${item.m}² - ${item.d}² = ${mSq} - ${dSq} = ${ans}`,
+          hint: `Midpoint identity: (${item.m} - ${item.d})(${item.m} + ${item.d}) = ${item.m}² - ${item.d}²`,
           shortcut: `Step 1: Midpoint is ${item.m} (diff ${item.d}) ➔ Step 2: ${item.m}² - ${item.d}² = ${mSq} - ${dSq} = ${ans}`
         };
       },
@@ -2473,7 +2470,7 @@
           family: `chainroot_${r1}_${r2}`,
           signature: `chainroot_${sq1}_${sq2}_${isPlus ? 'add' : 'sub'}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall roots: √${sq1} = ${r1} and √${sq2} = ${r2} ➔ ${r1} ${isPlus ? '+' : '-'} ${r2} = ${ans}`,
+          hint: `Roots: √${sq1} = ${r1} and √${sq2} = ${r2} (${isPlus ? 'add' : 'subtract'} to finish)`,
           shortcut: `Step 1: √${sq1} = ${r1} | √${sq2} = ${r2} ➔ Step 2: ${r1} ${isPlus ? '+' : '-'} ${r2} = ${ans}`
         };
       },
@@ -2494,29 +2491,32 @@
           { c: 9, sq: 16, op: '+', v1: 729, v2: 256 }
         ];
         const item = pickRandom(pairs);
+        const secondTerm = item.isCubeDiff ? `${item.sq}³` : `${item.sq}²`;
         const isNegCube = Math.random() < 0.40;
         let ans, expr;
         if (isNegCube) {
           ans = -item.v1 + item.v2;
-          expr = `(-${item.c})³ + ${item.sq}²`;
+          expr = `(-${item.c})³ + ${secondTerm}`;
         } else if (item.op === '-' && Math.random() < 0.40) {
           ans = item.v2 - item.v1;
-          expr = `${item.sq}² - ${item.c}³`;
+          expr = `${secondTerm} - ${item.c}³`;
         } else {
           ans = item.op === '+' ? item.v1 + item.v2 : item.v1 - item.v2;
-          expr = item.isCubeDiff ? `${item.c}³ - ${item.sq}³` : `${item.c}³ ${item.op} ${item.sq}²`;
+          expr = `${item.c}³ ${item.op} ${secondTerm}`;
         }
         const targetSec = computeDynamicIdealTime([{ type: 'cb', val: item.c }, { type: 'sq', val: item.sq }, { type: 'add_sub', terms: 2 }]);
         return {
           family: `cb_sq_${item.c}_${item.sq}`,
           signature: `cb_sq_${item.c}_${item.sq}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall powers: ${item.c}³ = ${item.v1}, ${item.sq}² = ${item.v2} ➔ ${expr} = ${ans}`,
+          hint: item.isCubeDiff
+            ? `Recall cubes: ${item.c}³ = ${item.v1} and ${item.sq}³ = ${item.v2}`
+            : `Recall powers: ${item.c}³ = ${item.v1} and ${item.sq}² = ${item.v2}`,
           shortcut: `Step 1: ${item.v1} | ${item.v2} ➔ Step 2: ${expr} = ${ans}`
         };
       },
 
-      // 13. Signed Powers Arithmetic (e.g. (-3)³ × 2⁴, (-3)³ ± 2⁴, 2⁴ - (-3)³)
+      // 13. Signed Powers Arithmetic (e.g. (-3)³ × 2⁴, (-3)³ ± 2⁴, (-2)⁷ ÷ 2³)
       signedPowersComposite: (id) => {
         const category = 'Powers';
         let item;
@@ -2537,7 +2537,19 @@
             { b1: 2, p1: 4, b2: -5, p2: 2, op: '-', v1: 16, v2: 25, ans: -9 },
             { b1: -3, p1: 3, b2: 5, p2: 2, op: '+', v1: -27, v2: 25, ans: -2 },
             { b1: 5, p1: 2, b2: -3, p2: 3, op: '+', v1: 25, v2: -27, ans: -2 },
-            { b1: -4, p1: 2, b2: -2, p2: 3, op: '+', v1: 16, v2: -8, ans: 8 }
+            { b1: -4, p1: 2, b2: -2, p2: 3, op: '+', v1: 16, v2: -8, ans: 8 },
+            { b1: -2, p1: 6, b2: 2, p2: 4, op: '÷', v1: 64, v2: 16, ans: 4 },
+            { b1: -2, p1: 5, b2: 2, p2: 3, op: '÷', v1: -32, v2: 8, ans: -4 },
+            { b1: -4, p1: 3, b2: 2, p2: 4, op: '÷', v1: -64, v2: 16, ans: -4 },
+            { b1: -3, p1: 4, b2: -3, p2: 2, op: '÷', v1: 81, v2: 9, ans: 9 },
+            { b1: -3, p1: 3, b2: -3, p2: 2, op: '÷', v1: -27, v2: 9, ans: -3 },
+            { b1: -5, p1: 2, b2: -2, p2: 3, op: '×', v1: 25, v2: -8, ans: -200 },
+            { b1: -4, p1: 2, b2: 3, p2: 3, op: '+', v1: 16, v2: 27, ans: 43 },
+            { b1: -4, p1: 3, b2: 5, p2: 2, op: '+', v1: -64, v2: 25, ans: -39 },
+            { b1: -6, p1: 2, b2: -2, p2: 5, op: '+', v1: 36, v2: -32, ans: 4 },
+            { b1: -2, p1: 5, b2: -6, p2: 2, op: '-', v1: -32, v2: 36, ans: -68 },
+            { b1: -3, p1: 3, b2: -2, p2: 3, op: '×', v1: -27, v2: -8, ans: 216 },
+            { b1: -5, p1: 2, b2: -3, p2: 2, op: '-', v1: 25, v2: 9, ans: 16 }
           ];
           item = pickRandom(easyPool);
         } else if (configDifficulty === 'normal') {
@@ -2560,7 +2572,18 @@
             { b1: 3, p1: 4, b2: 2, p2: 7, op: '-', v1: 81, v2: 128, ans: -47 },
             { b1: -5, p1: 3, b2: 4, p2: 3, op: '+', v1: -125, v2: 64, ans: -61 },
             { b1: -2, p1: 7, b2: 6, p2: 2, op: '+', v1: -128, v2: 36, ans: -92 },
-            { b1: -3, p1: 3, b2: 5, p2: 2, op: '×', v1: -27, v2: 25, ans: -675 }
+            { b1: -3, p1: 3, b2: 5, p2: 2, op: '×', v1: -27, v2: 25, ans: -675 },
+            { b1: -2, p1: 7, b2: 2, p2: 4, op: '÷', v1: -128, v2: 16, ans: -8 },
+            { b1: -2, p1: 8, b2: -2, p2: 3, op: '÷', v1: 256, v2: -8, ans: -32 },
+            { b1: -6, p1: 3, b2: 3, p2: 2, op: '÷', v1: -216, v2: 9, ans: -24 },
+            { b1: -6, p1: 3, b2: -2, p2: 3, op: '÷', v1: -216, v2: -8, ans: 27 },
+            { b1: -5, p1: 3, b2: 2, p2: 3, op: '×', v1: -125, v2: 8, ans: -1000 },
+            { b1: -4, p1: 3, b2: -3, p2: 2, op: '×', v1: -64, v2: 9, ans: -576 },
+            { b1: -2, p1: 6, b2: -3, p2: 3, op: '-', v1: 64, v2: -27, ans: 91 },
+            { b1: -5, p1: 3, b2: 7, p2: 2, op: '+', v1: -125, v2: 49, ans: -76 },
+            { b1: -7, p1: 2, b2: -2, p2: 6, op: '-', v1: 49, v2: 64, ans: -15 },
+            { b1: -3, p1: 4, b2: 2, p2: 4, op: '×', v1: 81, v2: 16, ans: 1296 },
+            { b1: -7, p1: 3, b2: -4, p2: 3, op: '+', v1: -343, v2: -64, ans: -407 }
           ];
           item = pickRandom(normalPool);
         } else {
@@ -2576,7 +2599,23 @@
             { b1: -4, p1: 4, b2: 3, p2: 5, op: '-', v1: 256, v2: 243, ans: 13 },
             { b1: 6, p1: 3, b2: -4, p2: 4, op: '+', v1: 216, v2: 256, ans: 472 },
             { b1: -5, p1: 4, b2: 2, p2: 9, op: '-', v1: 625, v2: 512, ans: 113 },
-            { b1: 2, p1: 9, b2: -5, p2: 4, op: '-', v1: 512, v2: 625, ans: -113 }
+            { b1: 2, p1: 9, b2: -5, p2: 4, op: '-', v1: 512, v2: 625, ans: -113 },
+            { b1: -2, p1: 10, b2: -2, p2: 5, op: '÷', v1: 1024, v2: -32, ans: -32 },
+            { b1: -3, p1: 6, b2: 3, p2: 3, op: '÷', v1: 729, v2: 27, ans: 27 },
+            { b1: -3, p1: 5, b2: -3, p2: 3, op: '÷', v1: -243, v2: -27, ans: 9 },
+            { b1: -5, p1: 4, b2: 5, p2: 2, op: '÷', v1: 625, v2: 25, ans: 25 },
+            { b1: -6, p1: 4, b2: -3, p2: 2, op: '÷', v1: 1296, v2: 9, ans: 144 },
+            { b1: -2, p1: 9, b2: -4, p2: 2, op: '÷', v1: -512, v2: 16, ans: -32 },
+            { b1: -7, p1: 3, b2: 2, p2: 3, op: '×', v1: -343, v2: 8, ans: -2744 },
+            { b1: -6, p1: 3, b2: -5, p2: 2, op: '×', v1: -216, v2: 25, ans: -5400 },
+            { b1: -2, p1: 8, b2: 3, p2: 2, op: '×', v1: 256, v2: 9, ans: 2304 },
+            { b1: -3, p1: 5, b2: 2, p2: 4, op: '×', v1: -243, v2: 16, ans: -3888 },
+            { b1: -5, p1: 3, b2: -3, p2: 3, op: '×', v1: -125, v2: -27, ans: 3375 },
+            { b1: -7, p1: 3, b2: 2, p2: 8, op: '+', v1: -343, v2: 256, ans: -87 },
+            { b1: -3, p1: 6, b2: 2, p2: 9, op: '+', v1: 729, v2: 512, ans: 1241 },
+            { b1: -2, p1: 10, b2: 3, p2: 6, op: '-', v1: 1024, v2: 729, ans: 295 },
+            { b1: -6, p1: 3, b2: -5, p2: 3, op: '-', v1: -216, v2: -125, ans: -91 },
+            { b1: -7, p1: 3, b2: -3, p2: 5, op: '-', v1: -343, v2: -243, ans: -100 }
           ];
           item = pickRandom(hardPool);
         }
@@ -2587,11 +2626,17 @@
         const targetSec = computeDynamicIdealTime([
           { type: 'pow23', base: Math.abs(item.b1), exp: item.p1 },
           { type: 'pow23', base: Math.abs(item.b2), exp: item.p2 },
-          item.op === '×' 
-            ? { type: 'prod', a: Math.abs(item.v1), b: Math.abs(item.v2) } 
-            : { type: 'add_sub', terms: 2, is3Digit: Math.abs(item.v1) >= 100 || Math.abs(item.v2) >= 100 }
+          item.op === '×'
+            ? { type: 'prod', a: Math.abs(item.v1), b: Math.abs(item.v2) }
+            : (item.op === '÷'
+              ? { type: 'prod', a: Math.abs(item.ans), b: Math.abs(item.v2) }
+              : { type: 'add_sub', terms: 2, is3Digit: Math.abs(item.v1) >= 100 || Math.abs(item.v2) >= 100 })
         ]);
-        const hint = `Step 1: ${t1Str} = ${item.v1} | Step 2: ${t2Str} = ${item.v2} ➔ ${item.v1} ${item.op} ${item.v2} = ${item.ans}`;
+        const hint = item.op === '÷'
+          ? (Math.abs(item.b1) === Math.abs(item.b2)
+            ? `Same-base division: track sign parity first, then subtract exponents (${item.p1} - ${item.p2})`
+            : `Track sign parity on negative bases, then divide powers`)
+          : `Evaluate powers first: ${t1Str} = ${item.v1} and ${t2Str} = ${item.v2}`;
         const shortcut = `${t1Str} = ${item.v1}, ${t2Str} = ${item.v2} ➔ ${item.ans}`;
 
         return {
@@ -2783,7 +2828,7 @@
               family: `c518_${k}`,
               signature: `c518_${base}_pure`,
               id, category, expr, ans: term, targetSec,
-              hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${base / 18} = ${term}`,
+              hint: `Divide ${base} by 18 first (${base / 18}), then multiply by 5`,
               shortcut: `5/18 × ${base} = 5 × ${base / 18} = ${term}`
             };
           }
@@ -2797,7 +2842,7 @@
             family: `c518_${k}`,
             signature: `c518_${base}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${base / 18} = ${term}`,
+            hint: `km/h to m/s factor: 5/18 × ${base} = 5 × ${base / 18}`,
             shortcut: `Step 1: 5/18 × ${base} = 5 × ${base / 18} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         } else {
@@ -2814,7 +2859,7 @@
               family: `c185_${k}`,
               signature: `c185_${base}_pure`,
               id, category, expr, ans: term, targetSec,
-              hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${base / 5} = ${term}`,
+              hint: `Divide ${base} by 5 first (${base / 5}), then multiply by 18`,
               shortcut: `18/5 × ${base} = 18 × ${base / 5} = ${term}`
             };
           }
@@ -2828,7 +2873,7 @@
             family: `c185_${k}`,
             signature: `c185_${base}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${base / 5} = ${term}`,
+            hint: `m/s to km/h factor: 18/5 × ${base} = 18 × ${base / 5}`,
             shortcut: `Step 1: 18/5 × ${base} = 18 × ${base / 5} = ${term} ➔ Step 2: ${term} ${isPlus ? '+' : '-'} ${offset} = ${ans}`
           };
         }
@@ -2858,7 +2903,7 @@
             family: `dec_${choice.name}`,
             signature: `dec_${choice.name}_${base}_pure`,
             id, category, expr, ans, targetSec,
-            hint: `Convert decimal to fraction: ${choice.name} = ${choice.frac} ➔ (${choice.frac}) × ${base} = ${prodVal}`,
+            hint: `Convert decimal to fraction: ${choice.name} = ${choice.frac}`,
             shortcut: `Step 1: ${choice.name} = ${choice.frac} ➔ (${choice.frac}) × ${base} = ${ans}`
           };
         }
@@ -2926,7 +2971,7 @@
           family: `dist_pct_${item.resFrac}`,
           signature: `dist_pct_${item.p1}_${item.p2}_${base}`,
           id, category, expr, ans, targetSec,
-          hint: `Combine over common base ${base}: (${item.p1} ${item.op} ${item.p2}) = ${item.resP} (${item.resFrac}) ➔ ${item.resFrac} × ${base} = ${ans}`,
+          hint: `Combine over common base ${base}: (${item.p1} ${item.op} ${item.p2}) = ${item.resP} (${item.resFrac})`,
           shortcut: `Step 1: Common base ${base} ➔ ${item.p1} ${item.op} ${item.p2} = ${item.resP} (${item.resFrac}) ➔ Step 2: ${item.resFrac} × ${base} = ${ans}`
         };
       },
@@ -2952,7 +2997,7 @@
           family: `chain_pct_${item.denom}_${item.mult}`,
           signature: `chain_pct_${item.p1}_${item.p2}_${base}`,
           id, category, expr, ans, targetSec,
-          hint: `Multiply fraction equivalents: ${item.p1} × ${item.p2} = ${item.fCombined} ➔ ${item.fCombined} of ${base} = ${ans}`,
+          hint: `Multiply fraction equivalents: ${item.p1} × ${item.p2} = ${item.fCombined}`,
           shortcut: `Step 1: Chained fraction = ${item.fCombined} ➔ Step 2: ${item.mult}/${item.denom} × ${base} = ${ans}`
         };
       }
@@ -2977,7 +3022,7 @@
             ans = prod;
             expr = `${num} × 25`;
             family = `break_x25_${num}`;
-            hint = `× 25 shortcut: (${num} ÷ 4) × 100 = ${k} × 100 = ${prod}`;
+            hint = `× 25 shortcut: (${num} ÷ 4) × 100`;
             shortcut = `${num} × 25 = (${num} ÷ 4) × 100 = ${prod}`;
           } else {
             const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 280 : 160);
@@ -2996,7 +3041,7 @@
             ans = prod;
             expr = `${num} × 50`;
             family = `break_x50_${num}`;
-            hint = `× 50 shortcut: (${num} ÷ 2) × 100 = ${num / 2} × 100 = ${prod}`;
+            hint = `× 50 shortcut: (${num} ÷ 2) × 100`;
             shortcut = `${num} × 50 = ${prod}`;
           } else {
             const offset = configDifficulty === 'easy' ? pickRandom([10, 20, 25, 50, 100]) : randInt(25, configDifficulty === 'hard' ? 260 : 150);
@@ -3151,7 +3196,7 @@
           family: `dualprod_${t1}_${t2}`,
           signature: `dualprod_${t1}_${m1}_${t2}_${m2}`,
           id, category, expr, ans, targetSec,
-          hint: `Evaluate both table products: ${t1} × ${m1} = ${prod1} and ${t2} × ${m2} = ${prod2}`,
+          hint: null,
           shortcut: `Step 1: (${t1}×${m1} = ${prod1}) | (${t2}×${m2} = ${prod2}) ➔ Step 2: ${prod1} ${isPlus ? '+' : '-'} ${prod2} = ${ans}`
         };
       },
@@ -3222,7 +3267,7 @@
             family: `prime_op_${primeDivisor}`,
             signature: `divprime_${dividend}_${primeDivisor}_pure_${isNeg ? 'neg' : 'pos'}`,
             id, category, expr, ans, targetSec,
-            hint: `Prime division: ${expr} = ${ans}`,
+            hint: null,
             shortcut: `Instant: ${expr} = ${ans}`
           };
         }
@@ -3266,7 +3311,7 @@
           family: `prime_op_${primeDivisor}`,
           signature: `divprime_${dividend}_${primeDivisor}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Chunking prime division: ${dividend} ÷ ${primeDivisor} = ${quotient}`,
+          hint: `Break ${dividend} into friendly multiples of ${primeDivisor}`,
           shortcut: `Step 1: division = ${isNeg ? -quotient : quotient} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -3299,7 +3344,7 @@
             family: `prime_op_${primeMultiplier}`,
             signature: `multprime_${primeMultiplier}_${m}_pure_${isNeg ? 'neg' : 'pos'}`,
             id, category, expr, ans, targetSec,
-            hint: `Prime product: ${expr} = ${ans}`,
+            hint: null,
             shortcut: `Recall: ${expr} = ${ans}`
           };
         }
@@ -3343,7 +3388,7 @@
           family: `prime_op_${primeMultiplier}`,
           signature: `multprime_${primeMultiplier}_${m}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Prime product: ${primeMultiplier} × ${m} = ${prod}`,
+          hint: null,
           shortcut: `Step 1: prime prod = ${isNeg ? -prod : prod} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -3408,7 +3453,7 @@
             family: `tbl_${t}`,
             signature: `tbl_${t}_${m}_pure_${isNeg ? 'neg' : 'pos'}`,
             id, category, expr, ans, targetSec,
-            hint: `Table of ${t}: ${expr} = ${ans}`,
+            hint: null,
             shortcut: `Recall Table: ${expr} = ${ans}`
           };
         }
@@ -3433,7 +3478,7 @@
           family: `tbl_${t}`,
           signature: `tbl_${t}_${m}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Table of ${t}: ${t} × ${m} = ${tableTerm}`,
+          hint: null,
           shortcut: `Step 1: ${t} × ${m} = ${tableTerm} ➔ Step 2: ${expr} = ${ans}`
         };
       },
@@ -3471,7 +3516,7 @@
           family: `dist_mult_${item.t}`,
           signature: `dist_mult_${item.t}_${item.a}_${item.b}`,
           id, category, expr, ans, targetSec,
-          hint: `Distributive property: Factor out ${item.t} ➔ ${item.t} × (${item.a} ${item.op} ${item.b}) = ${item.t} × ${item.sum} = ${ans}`,
+          hint: `Distributive property: Factor out ${item.t} ➔ ${item.t} × (${item.a} ${item.op} ${item.b}) = ${item.t} × ${item.sum}`,
           shortcut: `Step 1: Common factor ${item.t} ➔ Step 2: ${item.a} ${item.op} ${item.b} = ${item.sum} ➔ Step 3: ${item.t} × ${item.sum} = ${ans}`
         };
       },
@@ -3516,7 +3561,7 @@
           family: `dbl_hlv_${item.even}_${item.five}`,
           signature: `dbl_hlv_${item.even}_${item.five}`,
           id, category, expr, ans, targetSec,
-          hint: `Double & Halve: Halve ${item.even} = ${item.h}, Double ${item.five} = ${item.d} ➔ ${item.h} × ${item.d} = ${ans}`,
+          hint: `Double & Halve: Halve ${item.even} = ${item.h}, Double ${item.five} = ${item.d} ➔ ${item.h} × ${item.d}`,
           shortcut: `Step 1: Halve ${item.even} ➔ ${item.h} | Double ${item.five} ➔ ${item.d} ➔ Step 2: ${item.h} × ${item.d} = ${ans}`
         };
       },
@@ -3554,7 +3599,7 @@
           family: `diff_tbl_${t1}_${t2}`,
           signature: `diff_tbl_${t1}_${m1}_${t2}_${m2}_${item.op}`,
           id, category, expr, ans, targetSec,
-          hint: `Evaluate tables: ${t1} × ${m1} = ${p1} and ${t2} × ${m2} = ${p2} ➔ ${p1} ${item.op} ${p2} = ${ans}`,
+          hint: null,
           shortcut: `Step 1: ${p1} | ${p2} ➔ Step 2: ${expr} = ${ans}`
         };
       }
@@ -3600,7 +3645,9 @@
             family: `fact_${pair.n}_${pair.d}`,
             signature: `fact_${pair.n}_${pair.d}_pure`,
             id, category, expr, ans, targetSec,
-            hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${Array.from({length: pair.n - pair.d}, (_, i) => pair.n - i).join(' × ')} = ${pair.val}`,
+            hint: pair.n - pair.d === 1
+              ? null
+              : `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${Array.from({length: pair.n - pair.d}, (_, i) => pair.n - i).join(' × ')}`,
             shortcut: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${pair.val}`
           };
         }
@@ -3615,7 +3662,7 @@
             family: `fact_${pair.n}_${pair.d}`,
             signature: `fact_${pair.n}_${pair.d}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${pair.val}`,
+            hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${pair.val}, then combine with ${offset}`,
             shortcut: `Step 1: ${pair.n}! / ${pair.d}! = ${pair.val} ➔ Step 2: ${ans}`
           };
         }
@@ -3631,7 +3678,7 @@
           family: `fact_${pair.n}_${pair.d}`,
           signature: `fact_${pair.n}_${pair.d}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${Array.from({length: pair.n - pair.d}, (_, i) => pair.n - i).join(' × ')} = ${pair.val}`,
+          hint: `Factorial cancellation: ${pair.n}! / ${pair.d}! = ${Array.from({length: pair.n - pair.d}, (_, i) => pair.n - i).join(' × ')} = ${pair.val}, then scale by ${mult}`,
           shortcut: `Step 1: ${pair.n}! / ${pair.d}! = ${pair.val} ➔ Step 2: ${pair.val} × ${mult} = ${prod} ➔ Step 3: ${ans}`
         };
       },
@@ -3661,7 +3708,7 @@
             family: `fact_${n}`,
             signature: `fact_${n}_${mult}_pure`,
             id, category, expr, ans, targetSec,
-            hint: `Recall: ${n}! = ${factVals[n]}`,
+            hint: mult === 1 ? null : `Recall: ${n}! = ${factVals[n]}`,
             shortcut: mult === 1 ? `Instant Recall: ${n}! = ${ans}` : `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm}`
           };
         }
@@ -3675,7 +3722,7 @@
           family: `fact_${n}`,
           signature: `fact_${n}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall: ${n}! = ${factVals[n]}`,
+          hint: `Evaluate ${n}! = ${factVals[n]} first, then scale by ${mult}`,
           shortcut: `Step 1: ${n}! = ${factVals[n]} ➔ ${factVals[n]} × ${mult} = ${factTerm} ➔ Step 2: ${ans}`
         };
       },
@@ -3720,7 +3767,7 @@
             family: `comb_${c.n}_${c.r}`,
             signature: `comb_${c.n}_${c.r}_pure`,
             id, category, expr, ans: c.val, targetSec,
-            hint: `Recall: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!) = ${c.val}`,
+            hint: `Formula: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!)`,
             shortcut: `Instant Recall: ${c.n}C${c.r} = ${c.val}`
           };
         }
@@ -3742,7 +3789,7 @@
             family: `comb_${first.n}_${second.n}`,
             signature: `comb_${first.n}_${first.r}_${second.n}_${second.r}_${isPlus ? 'add' : 'sub'}`,
             id, category, expr, ans, targetSec,
-            hint: `Combinatorics: ${first.n}C${first.r} = ${first.val} and ${second.n}C${second.r} = ${second.val} ➔ ${first.val} ${isPlus ? '+' : '-'} ${second.val} = ${ans}`,
+            hint: `Combinatorics: ${first.n}C${first.r} = ${first.val} and ${second.n}C${second.r} = ${second.val} (${isPlus ? 'add' : 'subtract'} to finish)`,
             shortcut: `Step 1: ${first.n}C${first.r} = ${first.val} | ${second.n}C${second.r} = ${second.val} ➔ Step 2: ${ans}`
           };
         } else {
@@ -3756,7 +3803,7 @@
               family: `comb_${c.n}_${c.r}`,
               signature: `comb_${c.n}_${c.r}_pure`,
               id, category, expr, ans, targetSec,
-              hint: `Recall: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!) = ${c.val}`,
+              hint: `Formula: ${c.n}C${c.r} = ${c.n}! / (${c.r}! × ${c.n - c.r}!)`,
               shortcut: `Instant Recall: ${c.n}C${c.r} = ${c.val}`
             };
           }
@@ -3770,7 +3817,7 @@
             family: `comb_${c.n}_${c.r}`,
             signature: `comb_${c.n}_${c.r}_${expr}`,
             id, category, expr, ans, targetSec,
-            hint: `Evaluate combination: ${c.n}C${c.r} = ${c.val} ➔ ${expr} = ${ans}`,
+            hint: `Evaluate combination first: ${c.n}C${c.r} = ${c.val}, then combine with ${offset}`,
             shortcut: `Step 1: ${c.n}C${c.r} = ${c.val} ➔ Step 2: ${ans}`
           };
         }
@@ -3797,7 +3844,7 @@
           family: `dualfact_${item.n1}_${item.n2}`,
           signature: `dualfact_${item.n1}_${item.d1}_${item.n2}_${item.d2}_${item.op}`,
           id, category, expr, ans, targetSec,
-          hint: `Evaluate both: ${item.n1}!/${item.d1}! = ${item.v1} and ${item.n2}!/${item.d2}! = ${item.v2} ➔ ${item.v1} ${item.op} ${item.v2} = ${ans}`,
+          hint: `Evaluate both ratios: ${item.n1}!/${item.d1}! = ${item.v1} and ${item.n2}!/${item.d2}! = ${item.v2} (${item.op === '+' ? 'add' : 'subtract'} to finish)`,
           shortcut: `Step 1: ${item.v1} | ${item.v2} ➔ Step 2: ${item.v1} ${item.op} ${item.v2} = ${ans}`
         };
       }
@@ -3819,12 +3866,12 @@
             if (isNeg && Math.random() < 0.5) {
               ans = -t1 + t2;
               expr = `-${t1} + ${t2}`;
-              hint = `Signed addition: -${t1} + ${t2} = ${ans}`;
+              hint = `Signed sum: subtract smaller magnitude from larger magnitude`;
               shortcut = `-${t1} + ${t2} = ${ans}`;
             } else {
               ans = t1 + t2;
               expr = `${t1} + ${t2}`;
-              hint = `Tens first: ${Math.floor(t1/10)*10} + ${Math.floor(t2/10)*10} = ${(Math.floor(t1/10) + Math.floor(t2/10))*10}, then add units`;
+              hint = null;
               shortcut = `${t1} + ${t2} = ${ans}`;
             }
           } else {
@@ -3833,12 +3880,12 @@
             if (isNeg) {
               ans = t2 - t1;
               expr = `${t2} - ${t1}`;
-              hint = `Negative difference: ${t2} - ${t1} = -(${t1} - ${t2}) = ${ans}`;
+              hint = `Flip & negate: a - b = -(b - a)`;
               shortcut = `${t2} - ${t1} = ${ans}`;
             } else {
               ans = t1 - t2;
               expr = `${t1} - ${t2}`;
-              hint = `Friendly subtraction: ${t1} - ${t2} = ${ans}`;
+              hint = null;
               shortcut = `${t1} - ${t2} = ${ans}`;
             }
           }
@@ -3848,19 +3895,19 @@
           if (isNeg && Math.random() < 0.5) {
             ans = -t1 + t2;
             expr = `-${t1} + ${t2}`;
-            hint = `Signed addition: -${t1} + ${t2} = ${t2} - ${t1} = ${ans}`;
+            hint = `Signed sum: subtract smaller magnitude from larger magnitude`;
             shortcut = `-${t1} + ${t2} = ${ans}`;
           } else if (isNeg) {
             ans = -t1 - t2;
             expr = `-${t1} - ${t2}`;
-            hint = `Both negative: -(${t1} + ${t2}) = ${ans}`;
+            hint = `Both negative: add magnitudes and keep the minus sign`;
             shortcut = `-${t1} - ${t2} = ${ans}`;
           } else {
             ans = t1 + t2;
             expr = `${t1} + ${t2}`;
             const tensSum = (Math.floor(t1 / 10) + Math.floor(t2 / 10)) * 10;
             const unitsSum = (t1 % 10) + (t2 % 10);
-            hint = `Left-to-right: Tens (${Math.floor(t1/10)*10} + ${Math.floor(t2/10)*10} = ${tensSum}) + Units (${t1%10} + ${t2%10} = ${unitsSum})`;
+            hint = null;
             shortcut = `${t1} + ${t2} = ${tensSum} + ${unitsSum} = ${ans}`;
           }
         } else {
@@ -3869,9 +3916,7 @@
           while (t2 === t1) t2 = randInt(25, 99);
           ans = t1 - t2;
           expr = `${t1} - ${t2}`;
-          hint = ans < 0 
-            ? `Negative difference: ${t1} - ${t2} = -(${t2} - ${t1}) = ${ans}`
-            : `Tens first: ${t1} - ${Math.floor(t2/10)*10} = ${t1 - Math.floor(t2/10)*10}, then - ${t2%10}`;
+          hint = ans < 0 ? `Flip & negate: a - b = -(b - a)` : null;
           shortcut = `${t1} - ${t2} = ${ans}`;
         }
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: false }]);
@@ -3987,12 +4032,12 @@
             if (isNeg && Math.random() < 0.5) {
               ans = -t1 + t2;
               expr = `-${t1} + ${t2}`;
-              hint = `Signed multiples of 10: -${t1} + ${t2} = ${ans}`;
+              hint = `Signed sum: subtract smaller magnitude from larger magnitude`;
               shortcut = `-${t1} + ${t2} = ${ans}`;
             } else {
               ans = t1 + t2;
               expr = `${t1} + ${t2}`;
-              hint = `Multiples of 10: (${t1/10} + ${t2/10}) × 10 = ${ans}`;
+              hint = null;
               shortcut = `${t1} + ${t2} = ${ans}`;
             }
           } else {
@@ -4001,7 +4046,7 @@
             while (t2 === t1) t2 = randInt(12, 95) * 10;
             ans = t1 - t2;
             expr = `${t1} - ${t2}`;
-            hint = ans < 0 ? `Negative difference: ${t1} - ${t2} = -(${t2} - ${t1}) = ${ans}` : `Multiples of 10: (${t1/10} - ${t2/10}) × 10 = ${ans}`;
+            hint = ans < 0 ? `Flip & negate: a - b = -(b - a)` : null;
             shortcut = `${t1} - ${t2} = ${ans}`;
           }
         } else if (isPlus) {
@@ -4010,7 +4055,7 @@
           if (isNeg && Math.random() < 0.5) {
             ans = -t1 + t2;
             expr = `-${t1} + ${t2}`;
-            hint = `Signed sum: -${t1} + ${t2} = ${ans}`;
+            hint = `Signed sum: subtract smaller magnitude from larger magnitude`;
             shortcut = `-${t1} + ${t2} = ${ans}`;
           } else {
             ans = t1 + t2;
@@ -4019,7 +4064,7 @@
             const rem1 = t1 % 100;
             const rem2 = t2 % 100;
             const remSum = rem1 + rem2;
-            hint = `Decompose: Hundreds (${Math.floor(t1/100)*100} + ${Math.floor(t2/100)*100} = ${hSum}) + Remainder (${rem1} + ${rem2} = ${remSum})`;
+            hint = null;
             shortcut = `Hundreds (${hSum}) + Rest (${remSum}) = ${ans}`;
           }
         } else {
@@ -4028,9 +4073,7 @@
           while (t2 === t1) t2 = randInt(150, 960);
           ans = t1 - t2;
           expr = `${t1} - ${t2}`;
-          hint = ans < 0 
-            ? `Negative difference: ${t1} - ${t2} = -(${t2} - ${t1}) = ${ans}`
-            : `Hundreds first: ${t1} - ${Math.floor(t2/100)*100} = ${t1 - Math.floor(t2/100)*100}, then subtract ${t2%100}`;
+          hint = ans < 0 ? `Flip & negate: a - b = -(b - a)` : null;
           shortcut = `${t1} - ${t2} = ${ans}`;
         }
         const targetSec = computeDynamicIdealTime([{ type: 'add_sub', terms: 2, is3Digit: true }]);
@@ -4181,7 +4224,7 @@
           family: `as_comp_${base}_${ans < 0 ? 'neg' : 'pos'}`,
           signature: `as_comp_${base}_${subVal}_${isReversed ? 'rev' : 'norm'}`,
           id, category, expr, ans, targetSec,
-          hint: isReversed ? `Reversed complement: ${subVal} - ${base} = -(${base} - ${subVal}) = ${ans}` : `Subtract from ${base}`,
+          hint: isReversed ? `Reversed complement: ${subVal} - ${base} = -(${base} - ${subVal})` : `Complement to ${base}: pair hundreds and tens to reach ${base}`,
           shortcut: `${expr} = ${ans}`
         };
       },
@@ -4230,7 +4273,7 @@
           family: `hyb_ft_${f.denom}_${t}`,
           signature: `hyb_ft_${f.label}_${t}_${m}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Fraction: ${f.p} = ${f.label} | Table: ${t} × ${m} = ${tableTerm}`,
+          hint: `Fraction equivalence: ${f.p} = ${f.label}`,
           shortcut: `Step 1: ${f.label} × ${base} = ${fracTerm} ➔ Step 2: ${t} × ${m} = ${tableTerm} ➔ Step 3: ${ans}`
         };
       },
@@ -4250,7 +4293,7 @@
           family: `hyb_fp_${n}_${sq}`,
           signature: `hyb_fp_${n}_${sq}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall: ${n}! = ${factVals[n]} and ${sq}² = ${sqTerm}`,
+          hint: `Recall: ${n}! = ${factVals[n]} and ${sq}² = ${sqTerm} (combine to finish)`,
           shortcut: `Step 1: ${n}! × ${mult} = ${factTerm} ➔ Step 2: ${sq}² = ${sqTerm} ➔ Step 3: ${ans}`
         };
       },
@@ -4271,7 +4314,7 @@
           family: `hyb_rt_${base}_${t}`,
           signature: `hyb_rt_${base}_${t}_${m}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Square root: √${sqNum} = ${base} | Table: ${t} × ${m} = ${tableTerm}`,
+          hint: `Recall: ${base}² = ${sqNum} ➔ √${sqNum} = ${base}, then combine with ${t} × ${m}`,
           shortcut: `Step 1: √${sqNum} = ${base} ➔ Step 2: ${t} × ${m} = ${tableTerm} ➔ Step 3: ${ans}`
         };
       },
@@ -4296,7 +4339,7 @@
           family: `hyb_rf_${item.r}_${item.n}`,
           signature: `hyb_rf_${item.sq}_${item.n}_${item.d}_${item.op}`,
           id, category, expr, ans, targetSec,
-          hint: `Root: √${item.sq} = ${item.r} | Factorial: ${item.n}!/${item.d}! = ${item.fVal} ➔ ${item.r} ${item.op} ${item.fVal} = ${ans}`,
+          hint: `Root: √${item.sq} = ${item.r} | Factorial: ${item.n}!/${item.d}! = ${item.fVal}`,
           shortcut: `Step 1: √${item.sq} = ${item.r} | ${item.n}!/${item.d}! = ${item.fVal} ➔ Step 2: ${ans}`
         };
       },
@@ -4324,7 +4367,7 @@
           family: `hyb_pc_${sq}_${c.n}`,
           signature: `hyb_pc_${sq}_${c.n}_${c.r}_${isPlus ? 'add' : 'sub'}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall: ${sq}² = ${sqVal} and ${c.n}C${c.r} = ${c.val} ➔ ${sqVal} ${isPlus ? '+' : '-'} ${c.val} = ${ans}`,
+          hint: `Recall: ${sq}² = ${sqVal} and ${c.n}C${c.r} = ${c.val}`,
           shortcut: `Step 1: ${sq}² = ${sqVal} | ${c.n}C${c.r} = ${c.val} ➔ Step 2: ${ans}`
         };
       }
@@ -4375,7 +4418,7 @@
           family: `anc_sq_${sq}`,
           signature: `anc_sq_${sq}_${expr}`,
           id, category, expr, ans, targetSec,
-          hint: `Recall Focus Anchor: ${sq}² = ${sqVal}`,
+          hint: expr === `${sq}²` ? null : `Recall Focus Anchor: ${sq}² = ${sqVal} (combine with ${offset})`,
           shortcut: `Sprint Anchor: ${sq}² = ${sqVal} ➔ ${expr} = ${ans}`
         };
       },
@@ -4432,17 +4475,21 @@
         const t = sessionAnchors.table;
         const m = configDifficulty === 'easy' ? randInt(2, 6) : randInt(4, 9);
         const tableTerm = t * m;
-        let expr, ans;
+        let expr, ans, hint, shortcut;
 
         if (configDifficulty === 'easy') {
           const isPure = Math.random() < 0.65;
           if (isPure) {
             ans = tableTerm;
             expr = `${t} × ${m}`;
+            hint = null;
+            shortcut = `Sprint Anchor: ${t} × ${m} = ${ans}`;
           } else {
             const offset = pickRandom([10, 20, 25]);
             ans = tableTerm + offset;
             expr = `(${t} × ${m}) + ${offset}`;
+            hint = `Recall Focus Anchor: Table of ${t} (${t} × ${m} = ${tableTerm})`;
+            shortcut = `Sprint Anchor: ${t} × ${m} = ${tableTerm} ➔ ${ans}`;
           }
         } else {
           const template = randInt(1, 3);
@@ -4450,16 +4497,22 @@
             const offset = randInt(25, configDifficulty === 'hard' ? 220 : 150);
             ans = tableTerm + offset;
             expr = `(${t} × ${m}) + ${offset}`;
+            hint = `Recall Focus Anchor: Table of ${t} (${t} × ${m} = ${tableTerm})`;
+            shortcut = `Sprint Anchor: ${t} × ${m} = ${tableTerm} ➔ ${ans}`;
           } else if (template === 2) {
             const offset = randInt(20, Math.min(tableTerm - 10, configDifficulty === 'hard' ? 200 : 140));
             ans = tableTerm - offset;
             expr = `(${t} × ${m}) - ${offset}`;
+            hint = `Recall Focus Anchor: Table of ${t} (${t} × ${m} = ${tableTerm})`;
+            shortcut = `Sprint Anchor: ${t} × ${m} = ${tableTerm} ➔ ${ans}`;
           } else {
             const dividend = t * randInt(8, configDifficulty === 'hard' ? 45 : 25);
             const quotient = Math.round(dividend / t);
             const offset = randInt(20, 120);
             ans = quotient + offset;
             expr = `(${dividend} ÷ ${t}) + ${offset}`;
+            hint = `Recall Focus Anchor: Divide by ${t} (${dividend} ÷ ${t} = ${quotient})`;
+            shortcut = `Sprint Anchor: ${dividend} ÷ ${t} = ${quotient} ➔ ${ans}`;
           }
         }
 
@@ -4467,9 +4520,7 @@
         return {
           family: `anc_tbl_${t}`,
           signature: `anc_tbl_${t}_${m}_${expr}`,
-          id, category, expr, ans, targetSec,
-          hint: `Recall Focus Anchor: Table of ${t} (${t} × ${m} = ${tableTerm})`,
-          shortcut: `Sprint Anchor: Table of ${t} (${tableTerm}) ➔ ${ans}`
+          id, category, expr, ans, targetSec, hint, shortcut
         };
       }
     };
@@ -4479,49 +4530,61 @@
     // ==========================================
     const DistractorGenerator = {
       generateDistractors: (correctAns, expr = '') => {
-        const opts = new Set([correctAns]);
         const hasNegativeTerm = typeof expr === 'string' && /(^-|\(-|-√|∛\(-)/.test(expr.trim());
-        const isCloseSub = typeof expr === 'string' && (expr.includes('-') || expr.includes('−')) && correctAns > 0 && correctAns <= 50;
 
-        // Trap 0: Opposite Sign Trap
-        // Only add -correctAns when the answer is negative, the expression has negative terms, or it's a close subtraction (prevents magnitude leaks like 16³ - 100 having -3996)
-        if (correctAns !== 0 && (correctAns < 0 || hasNegativeTerm || isCloseSub)) {
-          opts.add(-correctAns);
+        // Mode 1 (Symmetric Sign-Parity Trap, 35% on negative-term expressions):
+        // Returns two balanced ± pairs sharing unit digits so neither sign nor magnitude is leaked.
+        if (hasNegativeTerm && correctAns !== 0 && Math.random() < 0.35) {
+          const partner = Math.abs(correctAns) < 10
+            ? (correctAns < 0 ? correctAns - 2 : correctAns + 2)
+            : (correctAns < 0 ? correctAns - 10 : correctAns + 10);
+          return [correctAns, -correctAns, partner, -partner].sort(() => Math.random() - 0.5);
         }
 
-        // Trap 1: Unit Digit Match (so user cannot guess by unit digit alone)
-        const unitTraps = [-30, -20, -10, 10, 20, 30, -100, 100, -50, 50]
-          .sort(() => Math.random() - 0.5);
+        // Mode 2 (Same-Sign Cognitive Cluster):
+        // All 4 options share exact sign of correctAns and stay proportional in magnitude.
+        const opts = new Set([correctAns]);
+        const absAns = Math.abs(correctAns);
+        const isValidSign = (cand) => correctAns < 0 ? cand < 0 : (correctAns > 0 ? cand > 0 : cand !== 0);
+
+        // Trap 1: Scaled Unit Digit Match
+        const unitPool = absAns < 25
+          ? [-10, 10, -20, 20]
+          : (absAns < 60 ? [-30, -20, -10, 10, 20, 30] : [-30, -20, -10, 10, 20, 30, -50, 50, -100, 100]);
+        const unitTraps = [...unitPool].sort(() => Math.random() - 0.5);
         for (let delta of unitTraps) {
           if (opts.size >= 3) break;
           const candidate = correctAns + delta;
-          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) {
+          if (candidate !== correctAns && isValidSign(candidate)) {
             opts.add(candidate);
           }
         }
 
-        // Trap 2: Mental Slip / Carryover Traps (±1, ±2, ±5, ±15, ±25)
-        const slipTraps = [-5, -2, -1, 1, 2, 5, -15, 15, -25, 25]
-          .sort(() => Math.random() - 0.5);
+        // Trap 2: Scaled Mental Slip / Carryover Traps
+        const slipPool = absAns < 25
+          ? [-4, -3, -2, -1, 1, 2, 3, 4, -5, 5]
+          : [-5, -2, -1, 1, 2, 5, -15, 15, -25, 25];
+        const slipTraps = [...slipPool].sort(() => Math.random() - 0.5);
         for (let delta of slipTraps) {
           if (opts.size >= 4) break;
           const candidate = correctAns + delta;
-          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) {
+          if (candidate !== correctAns && isValidSign(candidate)) {
             opts.add(candidate);
           }
         }
 
-        // Fallback fill
+        // Same-sign fallback fill
+        const sign = correctAns < 0 ? -1 : 1;
         let fillTries = 0;
         while (opts.size < 4 && fillTries++ < 50) {
-          const delta = randInt(1, 12) * (Math.random() > 0.5 ? 10 : -10);
+          const delta = randInt(1, 12) * 10 * sign;
           const candidate = correctAns + delta;
-          if (candidate !== correctAns && (correctAns < 0 || candidate >= 0)) opts.add(candidate);
+          if (candidate !== correctAns && isValidSign(candidate)) opts.add(candidate);
         }
         while (opts.size < 4) {
-          const step = opts.size * 10 + 1;
-          const candidate = correctAns < 0 ? correctAns - step : correctAns + step;
-          opts.add(candidate);
+          const step = (opts.size * 10 + 1) * sign;
+          const candidate = correctAns + step;
+          if (candidate !== correctAns && isValidSign(candidate)) opts.add(candidate);
         }
 
         return Array.from(opts).sort(() => Math.random() - 0.5);
@@ -4746,6 +4809,7 @@
     currentStreak = 0;
     isRunning = true;
     isPaused = false;
+    isTransitioning = false;
     isRetryModeActive = isRetryMode;
 
     if (isRetryMode && customMistakeList && customMistakeList.length > 0) {
@@ -4758,11 +4822,14 @@
       retryIndex = 0;
       timeRemaining = configDuration * 60;
       recentSignatures = []; // Reset on new standard sprint
+      recentFamilies = [];
       initSessionAnchors();  // Silently choose 3 Sprint Focus Anchors (Square, Table, Fraction) to drill across the sprint
     }
 
     navigateTo('rush');
     updateTimerDisplay();
+    document.getElementById('hud-score').textContent = '0';
+    document.getElementById('pause-toggle-btn').textContent = 'Pause';
 
     // Hide timer HUD completely during untimed retry mode
     const timerContainer = document.getElementById('hud-timer-container');
@@ -4824,18 +4891,7 @@
         shortcut: raw.shortcut
       };
       if (configQType === 'mcq') {
-        const correctAns = currentQuestion.ans;
-        const opts = new Set([correctAns]);
-        [-20, -10, 10, 20, -5, 5, -2, 2, -1, 1].forEach(d => {
-          if (opts.size < 4 && correctAns + d >= 0) opts.add(correctAns + d);
-        });
-        while (opts.size < 4) {
-          const delta = randInt(1, 10) * (Math.random() > 0.5 ? 10 : -10);
-          const cand = correctAns + delta;
-          if (cand >= 0) opts.add(cand);
-          else opts.add(Math.abs(cand) + 1);
-        }
-        currentQuestion.mcqOptions = Array.from(opts).sort(() => Math.random() - 0.5);
+        currentQuestion.mcqOptions = DistractorGenerator.generateDistractors(currentQuestion.ans, currentQuestion.expr);
       }
     } else {
       currentQuestion = generateSingleQuestion(questionCounter);
@@ -5111,15 +5167,16 @@
       const cat = a.category || '';
 
       // Deconstruct categories into pure individual topics
-      if (cat.includes('Fraction')) addTopicStat('Fractions & %', isCorrect, isWrong, isSkipped);
-      if (cat.includes('Table')) addTopicStat('Tables & Products', isCorrect, isWrong, isSkipped);
-      if (cat.includes('Factorial')) addTopicStat('Factorials', isCorrect, isWrong, isSkipped);
-      if (cat.includes('Power') || cat.includes('Square') || cat.includes('Cube')) addTopicStat('Powers', isCorrect, isWrong, isSkipped);
-      if (cat.includes('Addition') || cat.includes('Add / Sub')) addTopicStat('Addition & Subtraction', isCorrect, isWrong, isSkipped);
-      if (cat.includes('Root') || cat.includes('Decimal')) addTopicStat('Roots & Decimals', isCorrect, isWrong, isSkipped);
+      let matched = false;
+      if (cat.includes('Fraction')) { addTopicStat('Fractions & %', isCorrect, isWrong, isSkipped); matched = true; }
+      if (cat.includes('Table')) { addTopicStat('Tables & Products', isCorrect, isWrong, isSkipped); matched = true; }
+      if (cat.includes('Factorial')) { addTopicStat('Factorials', isCorrect, isWrong, isSkipped); matched = true; }
+      if (cat.includes('Power') || cat.includes('Square') || cat.includes('Cube')) { addTopicStat('Powers', isCorrect, isWrong, isSkipped); matched = true; }
+      if (cat.includes('Addition') || cat.includes('Add / Sub')) { addTopicStat('Addition & Subtraction', isCorrect, isWrong, isSkipped); matched = true; }
+      if (cat.includes('Root') || cat.includes('Decimal')) { addTopicStat('Roots & Decimals', isCorrect, isWrong, isSkipped); matched = true; }
 
       // Fallback if no keyword matched
-      if (!cat.includes('Fraction') && !cat.includes('Table') && !cat.includes('Factorial') && !cat.includes('Power') && !cat.includes('Addition') && !cat.includes('Root')) {
+      if (!matched) {
         addTopicStat(cat, isCorrect, isWrong, isSkipped);
       }
     });

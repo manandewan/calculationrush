@@ -112,6 +112,14 @@ Local Project Root: /Users/manandewan/Desktop/Daily calculations/index.html
     - Desktop keyboard handling: pressing `-` or `Subtract` automatically toggles leading minus sign.
     - Text input mode with decimal pad (`<input type="text" inputmode="decimal">`) with input filtering for digits, '.', and leading '-'.
   • Service Worker bumped to cache v5 for automatic client-side PWA updates.
+[Prompt 141]: Full codebase audit & mental sharpness polish (v8):
+  • MCQ Distractor Generator hardened (`DistractorGenerator`): eliminated sole-negative option giveaways and asymmetric `±` magnitude leaks; added 35% Symmetric Sign-Parity Double-Pair Mode (`[a, -a, b, -b]`) on negative-term expressions and scaled Same-Sign Cognitive Cluster Mode (`allSameSign`, proportional `unitTraps`/`slipTraps`).
+  • Retry Mistakes Mode fixed to use `DistractorGenerator.generateDistractors()` instead of legacy non-negative loop.
+  • Live Hints (`hint`) sanitized across all archetypes so live hints NEVER end with `= ${ans}`, basic table/recall drills set `hint: null`, while full worked `shortcut` solutions remain in post-sprint Review.
+  • Fixed `cubeSquareComposite` exponent bug where `isCubeDiff` items showed `sq²` in negated/reversed forms instead of `sq³`, and fixed `tableAnchor` `template === 3` division hint/shortcut.
+  • Expanded `signedPowersComposite` pools across Easy, Normal, and Hard (~28-30 items each, including clean `÷` power divisions).
+  • Polished sprint/UI state: removed `🚀` emoji from duration button label update, reset `hud-score` to `'0'`, `isTransitioning`, `pause-toggle-btn`, and `recentFamilies` in `startRush()`, and tightened `finishSprint()` category fallback matching.
+  • Service Worker bumped to `calculation-rush-v8`.
 
 ================================================================================
 3. QUESTION GENERATION ENGINE RULES & SPECIFICATIONS
